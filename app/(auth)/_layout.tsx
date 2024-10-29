@@ -1,11 +1,15 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { Stack } from 'expo-router'
+import React from 'react';
+import { Slot, Stack } from 'expo-router';
 
 const AuthLayout = () => {
   return (
-    <Stack></Stack>
-  )
-}
+    <Stack screenOptions={{
+      headerShown: false,
+      // presentation: 'modal',
+    }}>
+      <Stack.Screen name='login' />
+      </Stack>
+  );
+};
 
-export default AuthLayout
+export default AuthLayout;

@@ -8,4 +8,4 @@ const _layout = () => {
   )
 }
 
-export default _layout
+export default _layout  

@@ -9,6 +9,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
@@ -50,6 +51,7 @@ export default function OnboardingScreen() {
     } else {
       console.log('Onboarding complete', formData);
       // Here you would typically navigate to the main app or submit the data
+      router.replace('/(tabs)')
     }
   };
 
@@ -122,8 +124,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   progressDot: {
-    width: 60,
-    height: 6,
+    width: 80,
+    height: 10,
     borderRadius: 3,
     backgroundColor: '#FFDAB9',
     marginHorizontal: 5,

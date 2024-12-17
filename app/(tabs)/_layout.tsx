@@ -60,6 +60,9 @@ export default function ChatTabsLayout() {
         </Tabs>
         
         <View style={styles.inputContainer}>
+          <TouchableOpacity style={styles.addButton}>
+            <Text>➕</Text>
+          </TouchableOpacity>
           <TextInput 
             style={styles.input}
             placeholder="Message your coach..."
@@ -145,5 +148,9 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     padding: 8,
+  },
+  addButton: {
+    padding: 8,
+    opacity: 0.75,
   },
 });

@@ -7,9 +7,11 @@ import {
   StyleSheet,
   Dimensions,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { supabase } from '../../utils/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,21 +39,88 @@ const screens = [
   },
 ];
 
+// Add types for form data
+interface FormData {
+  weight?: string;
+  height?: string;
+  age?: string;
+  gender?: string;
+  activityLevel?: string;
+  goal?: string;
+  [key: string]: string | undefined;
+}
+
 export default function OnboardingScreen() {
   const [currentScreen, setCurrentScreen] = useState(0);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<FormData>({});
 
-  const handleInputChange = (key, value) => {
+  const handleInputChange = (key: string, value: string) => {
     setFormData((prevData) => ({ ...prevData, [key]: value }));
   };
+  const saveUserData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
 
-  const handleNext = () => {
+      // Check if profile exists
+      const { data: existingProfile, error: existingError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (existingError && existingError.code !== 'PGRST116') {
+        throw existingError;
+      }
+
+      if (existingProfile) {
+        router.replace('/(tabs)/');
+        return;
+      }
+
+      // Insert profile with better error handling
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          subscription_status: 'free'
+        });
+
+      if (profileError) {
+        console.error('Profile insertion error:', profileError);
+        throw new Error(`Failed to create profile: ${profileError.message}`);
+      }
+
+      // Insert metrics with better error handling
+      const { error: metricsError } = await supabase
+        .from('user_metrics')
+        .insert({
+          user_id: user.id,
+          weight: parseFloat(formData.weight || '0'),
+          height: parseFloat(formData.height || '0'),
+          age: parseInt(formData.age || '0'),
+          gender: formData.gender,
+          activity_level: formData.activityLevel,
+          goal: formData.goal
+        });
+
+      if (metricsError) {
+        console.error('Metrics insertion error:', metricsError);
+        throw new Error(`Failed to save metrics: ${metricsError.message}`);
+      }
+
+      router.replace('/(tabs)/(home)');
+    } catch (error) {
+      console.error('Error saving user data:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to save your information');
+    }
+  };
+
+  const handleNext = async () => {
     if (currentScreen < screens.length - 1) {
       setCurrentScreen(currentScreen + 1);
     } else {
-      console.log('Onboarding complete', formData);
-      // Here you would typically navigate to the main app or submit the data
-      router.replace('/(tabs)')
+      await saveUserData();
     }
   };
 

@@ -3,12 +3,16 @@ import { Slot, Stack } from 'expo-router';
 
 const AuthLayout = () => {
   return (
-    <Stack screenOptions={{
-      headerShown: false,
-      // presentation: 'modal',
-    }}>
-      <Stack.Screen name='login' />
-      </Stack>
+    <Stack>
+      <Stack.Screen 
+        name="landingPage" 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="login" 
+        options={{ headerShown: true, headerBackTitleVisible: false }}
+      />
+    </Stack>
   );
 };
 

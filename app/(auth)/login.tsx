@@ -22,16 +22,30 @@ export default function LoginPage() {
 
   async function signInWithEmail() {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+    const { error, data: { session } } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    if (error) Alert.alert(error.message);
-    else {
-      console.log('Signed in!');
+    if (error) {
+      Alert.alert(error.message);
+      setLoading(false);
+      return;
+    }
+
+    // Check if user has completed metrics
+    const { data: metrics } = await supabase
+      .from('user_metrics')
+      .select('*')
+      .eq('user_id', session?.user.id)
+      .single();
+
+    if (metrics?.weight && metrics?.height) {
+      router.replace('/(tabs)/');
+    } else {
       router.replace('/(onboarding)/onBoardingForm');
     }
+    
     setLoading(false);
   }
 

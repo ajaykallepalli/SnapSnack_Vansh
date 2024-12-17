@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
     backgroundColor: '#fff',
-    height: 48,
+    height: 69,
   },
   tabItem: {
     flexDirection: 'row',

@@ -31,17 +31,6 @@ export default function ChatScreen() {
           </View>
         </View>
       </ScrollView>
-      
-      <View style={styles.inputContainer}>
-        <TextInput 
-          style={styles.input}
-          placeholder="Message your coach..."
-          placeholderTextColor="#999"
-        />
-        <TouchableOpacity style={styles.sendButton}>
-          <Text>📤</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -86,23 +75,5 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#007AFF',
     fontSize: 16,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    alignItems: 'center',
-    gap: 8,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-    padding: 12,
-    borderRadius: 24,
-    fontSize: 16,
-  },
-  sendButton: {
-    padding: 8,
   },
 }); 

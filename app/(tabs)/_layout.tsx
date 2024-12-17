@@ -1,10 +1,9 @@
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
 
 export default function ChatTabsLayout() {
   return (
     <SafeAreaView style={styles.container}>
-      {/* Your custom header */}
       <View style={styles.header}>
         <Text style={styles.title}>Snap Snack</Text>
         <View style={styles.caloriesBadge}>
@@ -12,58 +11,65 @@ export default function ChatTabsLayout() {
         </View>
       </View>
       
-      {/* Tabs below header */}
-      <Tabs 
-        screenOptions={{
-          // Using custom header, so hide the default one
-          headerShown: false,
-          
-          // The tabBar is at the top by default for Expo Router 
-          // if you're using <Tabs> as a top-level route. 
-          // (No need for `tabBarPosition: 'top'` in Expo Router v2+)
-          tabBarStyle: styles.tabBar,
-          tabBarLabelStyle: styles.tabLabel,
-          tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: '#666',
-        }}
-      >
-        <Tabs.Screen 
-          name="(chat)" 
-          options={{
-            title: 'Coach',
-            tabBarLabel: ({ color }) => (
-              <View style={styles.tabItem}>
-                <Text style={[styles.icon, { color }]}>💬</Text>
-                <Text style={[styles.tabLabel, { color }]}>Coach</Text>
-              </View>
-            ),
+      <View style={styles.mainContent}>
+        <Tabs 
+          screenOptions={{
+            headerShown: false,
+            tabBarStyle: styles.tabBar,
+            tabBarLabelStyle: styles.tabLabel,
+            tabBarActiveTintColor: '#007AFF',
+            tabBarInactiveTintColor: '#666',
           }}
-        />
-        <Tabs.Screen 
-          name="(track)" 
-          options={{
-            title: 'Track',
-            tabBarLabel: ({ color }) => (
-              <View style={styles.tabItem}>
-                <Text style={[styles.icon, { color }]}>📊</Text>
-                <Text style={[styles.tabLabel, { color }]}>Track</Text>
-              </View>
-            ),
-          }}
-        />
-        <Tabs.Screen 
-          name="(plan)" 
-          options={{
-            title: 'Plan',
-            tabBarLabel: ({ color }) => (
-              <View style={styles.tabItem}>
-                <Text style={[styles.icon, { color }]}>📅</Text>
-                <Text style={[styles.tabLabel, { color }]}>Plan</Text>
-              </View>
-            ),
-          }}
-        />
-      </Tabs>
+        >
+          <Tabs.Screen 
+            name="(chat)" 
+            options={{
+              title: 'Coach',
+              tabBarLabel: ({ color }) => (
+                <View style={styles.tabItem}>
+                  <Text style={[styles.icon, { color }]}>💬</Text>
+                  <Text style={[styles.tabLabel, { color }]}>Coach</Text>
+                </View>
+              ),
+            }}
+          />
+          <Tabs.Screen 
+            name="(track)" 
+            options={{
+              title: 'Track',
+              tabBarLabel: ({ color }) => (
+                <View style={styles.tabItem}>
+                  <Text style={[styles.icon, { color }]}>📊</Text>
+                  <Text style={[styles.tabLabel, { color }]}>Track</Text>
+                </View>
+              ),
+            }}
+          />
+          <Tabs.Screen 
+            name="(plan)" 
+            options={{
+              title: 'Plan',
+              tabBarLabel: ({ color }) => (
+                <View style={styles.tabItem}>
+                  <Text style={[styles.icon, { color }]}>📅</Text>
+                  <Text style={[styles.tabLabel, { color }]}>Plan</Text>
+                </View>
+              ),
+            }}
+          />
+        </Tabs>
+        
+        <View style={styles.inputContainer}>
+          <TextInput 
+            style={styles.input}
+            placeholder="Message your coach..."
+            placeholderTextColor="#999"
+          />
+          <TouchableOpacity style={styles.sendButton}>
+            <Text>📤</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -74,7 +80,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    // Custom header styling
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -98,7 +103,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tabBar: {
-    // This styles the actual tab bar container
     elevation: 0,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
@@ -118,5 +122,28 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 16,
+  },
+  mainContent: {
+    flex: 1,
+    display: 'flex',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fff',
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    padding: 12,
+    borderRadius: 24,
+    fontSize: 16,
+  },
+  sendButton: {
+    padding: 8,
   },
 });

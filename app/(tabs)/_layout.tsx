@@ -1,7 +1,18 @@
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
+import { useChatState } from '../../services/openai';
+import { useState } from 'react';
 
 export default function ChatTabsLayout() {
+  const { messages, sendMessage, isLoading } = useChatState();
+  const [inputText, setInputText] = useState('');
+
+  const handleSend = async () => {
+    if (!inputText.trim()) return;
+    await sendMessage(inputText);
+    setInputText('');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -67,9 +78,12 @@ export default function ChatTabsLayout() {
             style={styles.input}
             placeholder="Message your coach..."
             placeholderTextColor="#999"
+            value={inputText}
+            onChangeText={setInputText}
+            onSubmitEditing={handleSend}
           />
-          <TouchableOpacity style={styles.sendButton}>
-            <Text>📤</Text>
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={isLoading}>
+            <Text>{isLoading ? '⏳' : '📤'}</Text>
           </TouchableOpacity>
         </View>
       </View>

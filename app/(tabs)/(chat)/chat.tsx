@@ -1,7 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import React from 'react';
+import { useChatState } from '../../../services/openai';
+
 
 export default function ChatScreen() {
+  const { messages } = useChatState();
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.chat}>
@@ -30,6 +34,23 @@ export default function ChatScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {messages.map((msg, index) => (
+          <View 
+            key={index}
+            style={[
+              styles.messageContainer,
+              msg.role === 'user' ? styles.userMessage : styles.aiMessage
+            ]}
+          >
+            <Text style={[
+              styles.messageText,
+              msg.role === 'user' && styles.userMessageText
+            ]}>
+              {msg.content}
+            </Text>
+          </View>
+        ))}
       </ScrollView>
     </View>
   );
@@ -53,6 +74,7 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 16,
     marginBottom: 12,
+    color: '#000',
   },
   nutritionText: {
     fontSize: 16,
@@ -76,4 +98,15 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 16,
   },
+  userMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#007AFF',
+  },
+  aiMessage: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F0F8FF',
+  },
+  userMessageText: {
+    color: '#fff',
+  }
 }); 

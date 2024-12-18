@@ -4,6 +4,7 @@ import { Redirect, router } from 'expo-router';
 import { supabase } from '../utils/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ChatProvider } from '../services/chatContext';
 
 const IndexPage = () => {
   useEffect(() => {
@@ -41,9 +42,11 @@ const IndexPage = () => {
 
   // Temporary return with button instead of null
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text onPress={resetSession}>Reset Session</Text>
-    </View>
+    <ChatProvider>
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text onPress={resetSession}>Reset Session</Text>
+      </View>
+    </ChatProvider>
   );
 };
 

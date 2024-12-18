@@ -1,18 +1,19 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import React, { useEffect } from 'react';
-import { useChatState } from '../../../services/openai';
-
+import { useChatContext } from '../../../services/chatContext';
 
 export default function ChatScreen() {
-  const { messages } = useChatState();
+  const { messages } = useChatContext();
+
   useEffect(() => {
-    console.log('Messages:', messages);
+    console.log('Chat screen messages:', messages);
   }, [messages]);
 
   return (
     //TODO: Customize summary and smaller box
     <View style={styles.container}>
       <ScrollView style={styles.chat}>
+        {/* Morning check-in */}
         <View style={styles.messageContainer}>
           <Text style={styles.messageText}>
             Morning Check-in 😊{'\n'}
@@ -38,23 +39,25 @@ export default function ChatScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {messages.map((msg, index) => (
-          <View 
-            key={index}
-            style={[
-              styles.messageContainer,
-              msg.role === 'user' ? styles.userMessage : styles.aiMessage
-            ]}
-          >
-            <Text style={[
-              styles.messageText,
-              msg.role === 'user' && styles.userMessageText
-            ]}>
-              {msg.content}
-            </Text>
-          </View>
-        ))}
+        {messages && messages.map((msg, index) => {
+          console.log('Rendering message:', msg); // Debug log
+          return (
+            <View 
+              key={index}
+              style={[
+                styles.messageContainer,
+                msg.role === 'user' ? styles.userMessage : styles.aiMessage
+              ]}
+            >
+              <Text style={[
+                styles.messageText,
+                msg.role === 'user' && styles.userMessageText
+              ]}>
+                  {msg.content}
+              </Text>
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );

@@ -1,16 +1,20 @@
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
-import { useChatState } from '../../services/openai';
+import { useChatContext } from '../../services/chatContext';
 import { useState } from 'react';
 
 export default function ChatTabsLayout() {
-  const { messages, sendMessage, isLoading } = useChatState();
+  const { sendMessage, isLoading } = useChatContext();
   const [inputText, setInputText] = useState('');
 
   const handleSend = async () => {
     if (!inputText.trim()) return;
-    await sendMessage(inputText);
-    setInputText('');
+    try {
+      await sendMessage(inputText);
+      setInputText('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
   };
 
   return (
@@ -82,7 +86,11 @@ export default function ChatTabsLayout() {
             onChangeText={setInputText}
             onSubmitEditing={handleSend}
           />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={isLoading}>
+          <TouchableOpacity 
+            style={styles.sendButton} 
+            onPress={handleSend}
+            disabled={isLoading}
+          >
             <Text>{isLoading ? '⏳' : '📤'}</Text>
           </TouchableOpacity>
         </View>

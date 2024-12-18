@@ -25,3 +25,12 @@ export interface ChatSession {
   title: string;
   created_at: string;
 }
+
+export interface ChatContextType {
+    messages: ChatMessage[];
+    sendMessage: (content: string) => Promise<void>;
+    isLoading: boolean;
+    currentChatSessionId: string | null;
+    loadChatSession: (chatSessionId: string) => Promise<void>;
+    initializeChatSession: (userId: string) => Promise<string>;
+  }

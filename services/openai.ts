@@ -1,7 +1,7 @@
 // services/openai.ts
 import OpenAI from 'openai';
 import { supabase } from '../utils/supabase';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChatMessage, NutritionContext } from '../types/chatTypes';
 import { ChatSessionService } from './chatSession';
 
@@ -95,8 +95,19 @@ export const useChatState = () => {
   };
 
   const sendMessage = async (content: string) => {
+    if (!content.trim()) return;
+    
     setIsLoading(true);
     try {
+      const userMessage: ChatMessage = { role: 'user', content };
+      console.log('1. Sending message:', userMessage);
+      
+      setMessages(currentMessages => {
+        const newMessages = [...currentMessages, userMessage];
+        console.log('2. Messages after user input:', newMessages);
+        return newMessages;
+      });
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No active auth session');
 
@@ -105,10 +116,6 @@ export const useChatState = () => {
       
       //TODO: Remove this after testing
       console.log('Chat session ID:', chatSessionId);
-
-      const userMessage: ChatMessage = { role: 'user', content };
-      // Update state with user message
-      setMessages(prev => [...prev, userMessage]);
 
       // Get nutrition context
       // TODO: Implement this from supabase
@@ -129,13 +136,18 @@ export const useChatState = () => {
         [...messages, userMessage],
         nutritionContext
       );
+      console.log('3. AI Response received:', aiResponse);
 
-      setMessages(prev => [...prev, {
+      const aiMessage: ChatMessage = {
         role: 'assistant',
         content: aiResponse.content || ''
-      } as ChatMessage]);
-
-      console.log('AI response:', aiResponse);
+      };
+      
+      setMessages(currentMessages => {
+        const newMessages = [...currentMessages, aiMessage];
+        console.log('4. Messages after AI response:', newMessages);
+        return newMessages;
+      });
 
       console.log('Saving messages to Supabase...');
       console.log('Session user ID:', session.user.id);
@@ -185,13 +197,7 @@ export const useChatState = () => {
       }
 
       console.log('Messages saved successfully');
-
-      // Update state with AI response
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: aiResponse.content || '' // Ensure content is never null
-      } as ChatMessage]); 
-
+      
     } catch (error: any) { // Type assertion to fix the linter error
       console.error('Error sending message:', error);
       if (error.code === '42501') {
@@ -208,6 +214,11 @@ export const useChatState = () => {
     setMessages(messages);
     setCurrentChatSessionId(chatSessionId);
   };
+
+  // Log when hook is initialized or messages change
+  useEffect(() => {
+    console.log('Current messages state:', messages);
+  }, [messages]);
 
   return {
     messages,

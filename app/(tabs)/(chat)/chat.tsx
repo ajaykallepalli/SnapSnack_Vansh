@@ -23,7 +23,6 @@ export default function ChatScreen() {
   }, [messages]);
 
   return (
-    //TODO: Add a new chat button and reset screen to show new messages and create a new chat session
     //TODO: Customize summary and smaller box, and minimize button
     <View style={styles.container}>
       <ScrollView style={styles.chat} 
@@ -56,6 +55,7 @@ export default function ChatScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        //TODO: Add a new chat button and reset screen to show new messages and create a new chat session
         {messages && messages.map((msg, index) => {
           console.log('Rendering message:', msg); // Debug log
           return (

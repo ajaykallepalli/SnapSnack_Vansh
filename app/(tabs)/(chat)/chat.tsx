@@ -10,7 +10,7 @@ export default function ChatScreen() {
   }, [messages]);
 
   return (
-    //TODO: Customize summary and smaller box
+    //TODO: Customize summary and smaller box, and minimize button
     <View style={styles.container}>
       <ScrollView style={styles.chat}>
         {/* Morning check-in */}
@@ -74,13 +74,13 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     backgroundColor: '#F0F8FF',
-    padding: 16,
+    padding: 12,
     borderRadius: 16,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   messageText: {
     fontSize: 16,
-    marginBottom: 12,
+    marginBottom: 0,
     color: '#000',
   },
   nutritionText: {
@@ -108,10 +108,12 @@ const styles = StyleSheet.create({
   userMessage: {
     alignSelf: 'flex-end',
     backgroundColor: '#007AFF',
+    maxWidth: '80%',
   },
   aiMessage: {
     alignSelf: 'flex-start',
     backgroundColor: '#F0F8FF',
+    maxWidth: '80%',
   },
   userMessageText: {
     color: '#fff',

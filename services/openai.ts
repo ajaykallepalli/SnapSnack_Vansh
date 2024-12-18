@@ -107,6 +107,7 @@ export const useChatState = () => {
       console.log('Chat session ID:', chatSessionId);
 
       const userMessage: ChatMessage = { role: 'user', content };
+      // Update state with user message
       setMessages(prev => [...prev, userMessage]);
 
       // Get nutrition context
@@ -128,6 +129,12 @@ export const useChatState = () => {
         [...messages, userMessage],
         nutritionContext
       );
+
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: aiResponse.content || ''
+      } as ChatMessage]);
+
       console.log('AI response:', aiResponse);
 
       console.log('Saving messages to Supabase...');

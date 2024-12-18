@@ -1,12 +1,16 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useChatState } from '../../../services/openai';
 
 
 export default function ChatScreen() {
   const { messages } = useChatState();
+  useEffect(() => {
+    console.log('Messages:', messages);
+  }, [messages]);
 
   return (
+    //TODO: Customize summary and smaller box
     <View style={styles.container}>
       <ScrollView style={styles.chat}>
         <View style={styles.messageContainer}>

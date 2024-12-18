@@ -1,5 +1,16 @@
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  SafeAreaView, 
+  TextInput, 
+  TouchableOpacity, 
+  KeyboardAvoidingView, 
+  Platform,
+  Keyboard
+} from 'react-native';
+
 import { useChatContext } from '../../services/chatContext';
 import { useState } from 'react';
 
@@ -10,92 +21,100 @@ export default function ChatTabsLayout() {
   const handleSend = async () => {
     if (!inputText.trim()) return;
     try {
-      await sendMessage(inputText);
+      const messageToSend = inputText;
       setInputText('');
+      Keyboard.dismiss();
+      await sendMessage(messageToSend);
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Snap Snack</Text>
-        <View style={styles.caloriesBadge}>
-          <Text style={styles.caloriesText}>1446 cals left</Text>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Snap Snack</Text>
+          <View style={styles.caloriesBadge}>
+            <Text style={styles.caloriesText}>1446 cals left</Text>
+          </View>
         </View>
-      </View>
-      
-      <View style={styles.mainContent}>
-        <Tabs 
-          screenOptions={{
-            headerShown: false,
-            tabBarStyle: styles.tabBar,
-            tabBarLabelStyle: styles.tabLabel,
-            tabBarActiveTintColor: '#007AFF',
-            tabBarInactiveTintColor: '#666',
-          }}
-        >
-          <Tabs.Screen 
-            name="(chat)" 
-            options={{
-              title: 'Coach',
-              tabBarLabel: ({ color }) => (
-                <View style={styles.tabItem}>
-                  <Text style={[styles.icon, { color }]}>💬</Text>
-                  <Text style={[styles.tabLabel, { color }]}>Coach</Text>
-                </View>
-              ),
-            }}
-          />
-          <Tabs.Screen 
-            name="(track)" 
-            options={{
-              title: 'Track',
-              tabBarLabel: ({ color }) => (
-                <View style={styles.tabItem}>
-                  <Text style={[styles.icon, { color }]}>📊</Text>
-                  <Text style={[styles.tabLabel, { color }]}>Track</Text>
-                </View>
-              ),
-            }}
-          />
-          <Tabs.Screen 
-            name="(plan)" 
-            options={{
-              title: 'Plan',
-              tabBarLabel: ({ color }) => (
-                <View style={styles.tabItem}>
-                  <Text style={[styles.icon, { color }]}>📅</Text>
-                  <Text style={[styles.tabLabel, { color }]}>Plan</Text>
-                </View>
-              ),
-            }}
-          />
-        </Tabs>
         
-        <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.addButton}>
-            <Text>➕</Text>
-          </TouchableOpacity>
-          <TextInput 
-            style={styles.input}
-            placeholder="Message your coach..."
-            placeholderTextColor="#999"
-            value={inputText}
-            onChangeText={setInputText}
-            onSubmitEditing={handleSend}
-          />
-          <TouchableOpacity 
-            style={styles.sendButton} 
-            onPress={handleSend}
-            disabled={isLoading}
+        <View style={styles.mainContent}>
+          <Tabs 
+            screenOptions={{
+              headerShown: false,
+              tabBarStyle: styles.tabBar,
+              tabBarLabelStyle: styles.tabLabel,
+              tabBarActiveTintColor: '#007AFF',
+              tabBarInactiveTintColor: '#666',
+            }}
           >
-            <Text>{isLoading ? '⏳' : '📤'}</Text>
-          </TouchableOpacity>
+            <Tabs.Screen 
+              name="(chat)" 
+              options={{
+                title: 'Coach',
+                tabBarLabel: ({ color }) => (
+                  <View style={styles.tabItem}>
+                    <Text style={[styles.icon, { color }]}>💬</Text>
+                    <Text style={[styles.tabLabel, { color }]}>Coach</Text>
+                  </View>
+                ),
+              }}
+            />
+            <Tabs.Screen 
+              name="(track)" 
+              options={{
+                title: 'Track',
+                tabBarLabel: ({ color }) => (
+                  <View style={styles.tabItem}>
+                    <Text style={[styles.icon, { color }]}>📊</Text>
+                    <Text style={[styles.tabLabel, { color }]}>Track</Text>
+                  </View>
+                ),
+              }}
+            />
+            <Tabs.Screen 
+              name="(plan)" 
+              options={{
+                title: 'Plan',
+                tabBarLabel: ({ color }) => (
+                  <View style={styles.tabItem}>
+                    <Text style={[styles.icon, { color }]}>📅</Text>
+                    <Text style={[styles.tabLabel, { color }]}>Plan</Text>
+                  </View>
+                ),
+              }}
+            />
+          </Tabs>
+          
+          <View style={styles.inputContainer}>
+            <TouchableOpacity style={styles.addButton}>
+              <Text>➕</Text>
+            </TouchableOpacity>
+            <TextInput 
+              style={styles.input}
+              placeholder="Message your coach..."
+              placeholderTextColor="#999"
+              value={inputText}
+              onChangeText={setInputText}
+              onSubmitEditing={handleSend}
+            />
+            <TouchableOpacity 
+              style={styles.sendButton} 
+              onPress={handleSend}
+              disabled={isLoading}
+            >
+              <Text>{isLoading ? '⏳' : '📤'}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 

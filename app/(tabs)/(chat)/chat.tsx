@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import React, { useEffect, useRef } from 'react';
 import { useChatContext } from '../../../services/chatContext';
+import { useNutritionContext } from '../../../services/nutritionContext';
 
 export default function ChatScreen() {
   const { messages } = useChatContext();
-
+  const { remainingNutrition } = useNutritionContext();
   useEffect(() => {
     console.log('Chat screen messages:', messages);
   }, [messages]);
@@ -36,9 +37,9 @@ export default function ChatScreen() {
             Here's how you're doing so far:
           </Text>
           <Text style={styles.nutritionText}>
-            🥩 Protein: 108g left{'\n'}
-            🌾 Carbs: 162g left{'\n'}
-            🥑 Fat: 40g left
+            🥩 Protein: {remainingNutrition.protein}g left{'\n'}
+            🌾 Carbs: {remainingNutrition.carbs}g left{'\n'}
+            🥑 Fat: {remainingNutrition.fat}g left
           </Text>
           <Text style={styles.questionText}>
             Would you like to plan your lunch?

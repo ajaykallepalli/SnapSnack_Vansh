@@ -1,3 +1,4 @@
+// _layout.tsx
 import { Tabs } from 'expo-router';
 import { 
   View, 
@@ -13,13 +14,14 @@ import {
 } from 'react-native';
 import { useRef } from 'react';
 import { useChatContext } from '../../services/chatContext';
+import { useNutritionContext } from '../../services/nutritionContext';
 import { useState } from 'react';
 
 export default function ChatTabsLayout() {
   const { sendMessage, isLoading } = useChatContext();
   const [inputText, setInputText] = useState('');
   const listRef = useRef<FlatList>(null);
-
+  const { remainingNutrition } = useNutritionContext();
   const handleSend = async () => {
     if (!inputText.trim()) return;
     try {
@@ -28,11 +30,7 @@ export default function ChatTabsLayout() {
       Keyboard.dismiss();
       await sendMessage(messageToSend);
       if (listRef.current) {
-        // If using FlatList:
         listRef.current.scrollToEnd({ animated: true });
-        
-        // Or if using ScrollView:
-        // listRef.current.scrollToEnd({ animated: true });
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -49,7 +47,7 @@ export default function ChatTabsLayout() {
           <View style={styles.header}>
             <Text style={styles.title}>Snap Snack</Text>
             <View style={styles.caloriesBadge}>
-              <Text style={styles.caloriesText}>1446 cals left</Text>
+              <Text style={styles.caloriesText}>{remainingNutrition.calories} cals left</Text>
             </View>
           </View>
           

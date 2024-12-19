@@ -7,19 +7,23 @@ export class DailyNutritionService {
     
     try {
       // Check if daily goals exist
-      const { data: existingGoals } = await supabase
+      const { data: existingGoals, error: existingGoalsError } = await supabase
         .from('daily_nutrition_goals')
         .select('*')
         .eq('user_id', userId)
         .eq('effective_date', today)
-        .single();
+        .maybeSingle();
 
+      if (existingGoalsError) throw existingGoalsError;
       if (existingGoals) return existingGoals;
 
       // Get user's base nutrition goals
       const goals = await NutritionGoalsService.getUserNutritionGoals(userId);
-      
+      console.log('User goals:', goals);
+
       // Create new daily goals
+      // Check if user has daily nutrition log for today
+      // TODO: Change to goals table with all future days having goals
       const { data: dailyGoals, error } = await supabase
         .from('daily_nutrition_goals')
         .insert({

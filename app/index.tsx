@@ -29,41 +29,6 @@ const IndexPage = () => {
         return;
       }
       router.replace('/(tabs)/');
-      // Check if user has daily nutrition log for today
-      // TODO: Change to goals table with all future days having goals
-      const today = new Date().toISOString().split('T')[0];
-      try {
-        const { data: dailyGoals } = await supabase
-          .from('daily_nutrition_goals')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .eq('effective_date', today)
-          .single();
-        console.log(dailyGoals);
-        console.log(today);
-        if (!dailyGoals) {
-          // Get user's nutrition goals
-          const goals = await NutritionGoalsService.getUserNutritionGoals(session.user.id);
-          console.log(goals);
-          console.log(today);
-          // Create daily goals with goals
-          
-          await supabase.from('daily_nutrition_goals').insert({
-            user_id: session.user.id,
-            effective_date: today,
-            calories_goal: goals.calories,
-            protein_goal: goals.protein,
-            carbs_goal: goals.carbs,
-            fat_goal: goals.fat,
-            meals_data: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching daily goals:', error);
-        throw new Error('Failed to fetch daily nutrition goals');
-      }
     };
 
     // Add delay to give time for navigation

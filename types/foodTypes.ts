@@ -36,3 +36,21 @@ export interface NutritionContextType {
     };
     isLoading: boolean;
   }
+
+export interface UserMetrics {
+    currentWeight: number;  // in kg
+    goalWeight: number;     // in kg
+    height: number;        // in cm
+    age: number;
+    gender: 'male' | 'female';
+    activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+}
+
+
+export interface WeightEntry {
+    id?: string;
+    user_id: string;
+    weight: number;
+    date: string;
+    notes?: string;
+  }

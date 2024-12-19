@@ -1,33 +1,64 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { NutritionTrackingService } from './nutritionTracking';
+import { NutritionGoalsService } from './weightTracking';
 import { supabase } from '../utils/supabase';
-import type { DailyNutrition, MealLog, NutritionContextType } from '../types/foodTypes';
+import type { DailyNutrition, MealLog, NutritionContextType, UserMetrics } from '../types/foodTypes';
 
-// Create the context with a default undefined value
 const NutritionContext = createContext<NutritionContextType | undefined>(undefined);
-
-// Default goals - should be fetched from user settings
-const DAILY_GOALS = {
-  calories: 2000,
-  protein: 150,
-  carbs: 200,
-  fat: 65,
-} as const;
 
 export function NutritionProvider({ children }: { children: React.ReactNode }) {
   const [dailyNutrition, setDailyNutrition] = useState<DailyNutrition | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const remainingNutrition = {
-    calories: (dailyNutrition?.calories_goal ?? DAILY_GOALS.calories) - (dailyNutrition?.calories_consumed ?? 0),
-    protein: (dailyNutrition?.protein_goal ?? DAILY_GOALS.protein) - (dailyNutrition?.protein_consumed ?? 0),
-    carbs: (dailyNutrition?.carbs_goal ?? DAILY_GOALS.carbs) - (dailyNutrition?.carbs_consumed ?? 0),
-    fat: (dailyNutrition?.fat_goal ?? DAILY_GOALS.fat) - (dailyNutrition?.fat_consumed ?? 0),
+    calories: (dailyNutrition?.calories_goal ?? 0) - (dailyNutrition?.calories_consumed ?? 0),
+    protein: (dailyNutrition?.protein_goal ?? 0) - (dailyNutrition?.protein_consumed ?? 0),
+    carbs: (dailyNutrition?.carbs_goal ?? 0) - (dailyNutrition?.carbs_consumed ?? 0),
+    fat: (dailyNutrition?.fat_goal ?? 0) - (dailyNutrition?.fat_consumed ?? 0),
   };
 
   useEffect(() => {
     loadTodayNutrition();
+
+    // Subscribe to changes in user_metrics
+    const metricsSubscription = supabase
+      .channel('user_metrics_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_metrics'
+        },
+        async (payload) => {
+          if (payload.new) {
+            await updateDailyGoals(payload.new as UserMetrics);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      metricsSubscription.unsubscribe();
+    };
   }, []);
+
+  const updateDailyGoals = async (metrics: UserMetrics) => {
+    if (!dailyNutrition) return;
+
+    const nutritionGoals = await NutritionGoalsService.updateUserNutritionGoals(metrics.user_id, metrics);
+    
+    const updatedNutrition = {
+      ...dailyNutrition,
+      calories_goal: nutritionGoals.calories,
+      protein_goal: nutritionGoals.protein,
+      carbs_goal: nutritionGoals.carbs,
+      fat_goal: nutritionGoals.fat,
+    };
+
+    await NutritionTrackingService.updateDailyLog(updatedNutrition);
+    setDailyNutrition(updatedNutrition);
+  };
 
   const loadTodayNutrition = async () => {
     try {
@@ -38,7 +69,28 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
       }
 
       const today = new Date().toISOString().split('T')[0];
-      const log = await NutritionTrackingService.getDailyLog(session.user.id, today);
+      let log = await NutritionTrackingService.getDailyLog(session.user.id, today);
+      
+      if (!log) {
+        // Get current nutrition goals from the service
+        const nutritionGoals = await NutritionGoalsService.getUserNutritionGoals(session.user.id);
+        
+        log = {
+          user_id: session.user.id,
+          log_date: today,
+          calories_goal: nutritionGoals.calories,
+          protein_goal: nutritionGoals.protein,
+          carbs_goal: nutritionGoals.carbs,
+          fat_goal: nutritionGoals.fat,
+          calories_consumed: 0,
+          protein_consumed: 0,
+          carbs_consumed: 0,
+          fat_consumed: 0,
+          meals_data: [],
+        };
+        await NutritionTrackingService.updateDailyLog(log);
+      }
+      
       setDailyNutrition(log);
     } catch (error) {
       console.error('Error loading nutrition:', error);
@@ -59,13 +111,13 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
         user_id: session.user.id,
         log_date: today,
         calories_goal: DAILY_GOALS.calories,
-        calories_consumed: 0,
+        calories_consumed: dailyNutrition?.calories_consumed ?? 0,
         protein_goal: DAILY_GOALS.protein,
-        protein_consumed: 0,
+        protein_consumed: dailyNutrition?.protein_consumed ?? 0,
         carbs_goal: DAILY_GOALS.carbs,
-        carbs_consumed: 0,
+        carbs_consumed: dailyNutrition?.carbs_consumed ?? 0,
         fat_goal: DAILY_GOALS.fat,
-        fat_consumed: 0,
+        fat_consumed: dailyNutrition?.fat_consumed ?? 0,
         meals_data: [],
       };
 
@@ -102,7 +154,6 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Custom hook to use the nutrition context
 export function useNutritionContext() {
   const context = useContext(NutritionContext);
   if (undefined === context) {

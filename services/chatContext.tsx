@@ -1,6 +1,7 @@
 // services/chatContext.tsx
 import React, { createContext, useContext } from 'react';
-import { useChatState } from './openai';
+// import { useChatState } from './openaiService';
+import { useChatState } from './cerebrasService';
 import { ChatMessage } from '../types/chatTypes';
 import { ChatContextType } from '../types/chatTypes';
 

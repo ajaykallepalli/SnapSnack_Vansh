@@ -1,38 +1,40 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import React from 'react';
+import { useNutritionContext } from '../../../services/nutritionContext';
 
 export default function TrackScreen() {
+  const { dailyNutrition, remainingNutrition } = useNutritionContext();
   return (
     <ScrollView style={styles.container}>
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Today's Progress</Text>
-          <Text style={styles.caloriesLeft}>1447 left</Text>
+          <Text style={styles.caloriesLeft}>{remainingNutrition?.calories_consumed} left</Text>
         </View>
 
         <View style={styles.progressSection}>
           <View style={styles.progressRow}>
             <Text style={styles.macroLabel}>Protein</Text>
             <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.proteinBar, { width: '60%' }]} />
+              <View style={[styles.progressBar, styles.proteinBar, { width: `${(dailyNutrition?.protein_consumed / dailyNutrition?.protein_goal) * 100}%` }]} />
             </View>
-            <Text style={styles.macroValue}>108g left</Text>
+            <Text style={styles.macroValue}>{remainingNutrition.protein}g left</Text>
           </View>
 
           <View style={styles.progressRow}>
             <Text style={styles.macroLabel}>Carbs</Text>
             <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.carbsBar, { width: '75%' }]} />
+              <View style={[styles.progressBar, styles.carbsBar, { width: `${(dailyNutrition?.carbs_consumed / dailyNutrition?.carbs_goal) * 100}%` }]} />
             </View>
-            <Text style={styles.macroValue}>162g left</Text>
+            <Text style={styles.macroValue}>{remainingNutrition.carbs}g left</Text>
           </View>
-
+    
           <View style={styles.progressRow}>
             <Text style={styles.macroLabel}>Fat</Text>
             <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.fatBar, { width: '45%' }]} />
+              <View style={[styles.progressBar, styles.fatBar, { width: `${(dailyNutrition?.fat_consumed / dailyNutrition?.fat_goal) * 100}%` }]} />
             </View>
-            <Text style={styles.macroValue}>40g left</Text>
+            <Text style={styles.macroValue}>{remainingNutrition.fat}g left</Text>
           </View>
         </View>
       </View>

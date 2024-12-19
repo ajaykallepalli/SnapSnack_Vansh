@@ -22,6 +22,7 @@ export default function ChatTabsLayout() {
   const [inputText, setInputText] = useState('');
   const listRef = useRef<FlatList>(null);
   const { remainingNutrition } = useNutritionContext();
+  
   const handleSend = async () => {
     if (!inputText.trim()) return;
     try {
@@ -38,91 +39,84 @@ export default function ChatTabsLayout() {
   };
 
   return (
-      <SafeAreaView style={styles.container}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-        >
-          <View style={styles.header}>
-            <Text style={styles.title}>Snap Snack</Text>
-            <View style={styles.caloriesBadge}>
-              <Text style={styles.caloriesText}>{remainingNutrition.calories} cals left</Text>
-            </View>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Snap Snack</Text>
+          <View style={styles.caloriesBadge}>
+            <Text style={styles.caloriesText}>{remainingNutrition.calories} cals left</Text>
           </View>
-          
-          <View style={styles.mainContent}>
-            <Tabs 
-              screenOptions={{
-                headerShown: false,
-                tabBarStyle: styles.tabBar,
-                tabBarLabelStyle: styles.tabLabel,
-                tabBarActiveTintColor: '#007AFF',
-                tabBarInactiveTintColor: '#666',
+        </View>
+        
+        <View style={styles.contentContainer}>
+          <Tabs 
+            screenOptions={{
+              headerShown: false,
+              tabBarStyle: styles.tabBar,
+              tabBarActiveTintColor: '#007AFF',
+              tabBarInactiveTintColor: '#666',
+              tabBarLabelStyle: styles.tabLabelStyle,
+            }}
+          >
+            <Tabs.Screen 
+              name="(chat)" 
+              options={{
+                title: 'Coach',
+                tabBarIcon: ({ color }) => (
+                  <Text style={[styles.tabIcon, { color }]}>💬</Text>
+                ),
+                tabBarLabel: 'Coach',
               }}
-            >
-              <Tabs.Screen 
-                name="(chat)" 
-                options={{
-                  title: 'Coach',
-                  tabBarLabel: ({ color }) => (
-                    <View style={styles.tabItem}>
-                      <Text style={[styles.icon, { color }]}>💬</Text>
-                      <Text style={[styles.tabLabel, { color }]}>Coach</Text>
-                    </View>
-                  ),
-                }}
-              />
-              <Tabs.Screen 
-                name="(track)" 
-                options={{
-                  title: 'Track',
-                  tabBarLabel: ({ color }) => (
-                    <View style={styles.tabItem}>
-                      <Text style={[styles.icon, { color }]}>📊</Text>
-                      <Text style={[styles.tabLabel, { color }]}>Track</Text>
-                    </View>
-                  ),
-                }}
-              />
-              <Tabs.Screen 
-                name="(plan)" 
-                options={{
-                  title: 'Plan',
-                  tabBarLabel: ({ color }) => (
-                    <View style={styles.tabItem}>
-                      <Text style={[styles.icon, { color }]}>📅</Text>
-                      <Text style={[styles.tabLabel, { color }]}>Plan</Text>
-                    </View>
-                  ),
-                }}
-              />
-            </Tabs>
-            
-            <View style={styles.inputContainer}>
-              <TouchableOpacity style={styles.addButton}>
-                <Text>➕</Text>
-              </TouchableOpacity>
-              <TextInput 
-                style={styles.input}
-                placeholder="Message your coach..."
-                placeholderTextColor="#999"
-                value={inputText}
-                onChangeText={setInputText}
-                onSubmitEditing={handleSend}
-              />
-              <TouchableOpacity 
-                style={styles.sendButton} 
-                onPress={handleSend}
-                disabled={isLoading}
-              >
-                <Text>{isLoading ? '⏳' : '📤'}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    
+            />
+            <Tabs.Screen 
+              name="(track)" 
+              options={{
+                title: 'Track',
+                tabBarIcon: ({ color }) => (
+                  <Text style={[styles.tabIcon, { color }]}>📊</Text>
+                ),
+                tabBarLabel: 'Track',
+              }}
+            />
+            <Tabs.Screen 
+              name="(plan)" 
+              options={{
+                title: 'Plan',
+                tabBarIcon: ({ color }) => (
+                  <Text style={[styles.tabIcon, { color }]}>📅</Text>
+                ),
+                tabBarLabel: 'Plan',
+              }}
+            />
+          </Tabs>
+        </View>
+
+        <View style={styles.inputContainer}>
+          <TouchableOpacity style={styles.addButton}>
+            <Text style={styles.buttonIcon}>➕</Text>
+          </TouchableOpacity>
+          <TextInput 
+            style={styles.input}
+            placeholder="Message your coach..."
+            placeholderTextColor="#999"
+            value={inputText}
+            onChangeText={setInputText}
+            onSubmitEditing={handleSend}
+          />
+          <TouchableOpacity 
+            style={styles.sendButton} 
+            onPress={handleSend}
+            disabled={isLoading}
+          >
+            <Text style={styles.buttonIcon}>{isLoading ? '⏳' : '📤'}</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -131,75 +125,81 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  keyboardView: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
   },
   caloriesBadge: {
     backgroundColor: '#E5F1FF',
-    padding: 8,
-    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
   },
   caloriesText: {
     color: '#007AFF',
+    fontSize: 16,
     fontWeight: '500',
+  },
+  contentContainer: {
+    flex: 1,
   },
   tabBar: {
-    elevation: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 49,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
     backgroundColor: '#fff',
-    height: 69,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
   },
-  tabItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    gap: 4,
+  tabIcon: {
+    fontSize: 20,
+    marginBottom: 2,
   },
-  tabLabel: {
-    fontSize: 14,
-    textTransform: 'none',
+  tabLabelStyle: {
+    fontSize: 12,
     fontWeight: '500',
-  },
-  icon: {
-    fontSize: 16,
-  },
-  mainContent: {
-    flex: 1,
-    display: 'flex',
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderTopWidth: 1,
     borderTopColor: '#E5E5E5',
-    alignItems: 'center',
-    gap: 8,
     backgroundColor: '#fff',
+    alignItems: 'center',
+    paddingBottom: Platform.OS === 'ios' ? 30 : 8,
   },
   input: {
     flex: 1,
     backgroundColor: '#F5F5F5',
-    padding: 12,
-    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
     fontSize: 16,
+    marginHorizontal: 8,
+  },
+  addButton: {
+    padding: 8,
   },
   sendButton: {
     padding: 8,
   },
-  addButton: {
-    padding: 8,
-    opacity: 0.75,
+  buttonIcon: {
+    fontSize: 20,
   },
 });

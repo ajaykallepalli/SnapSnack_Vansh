@@ -24,7 +24,7 @@ const IndexPage = () => {
         .eq('user_id', session.user.id)
         .single();
 
-      if (!metrics) {
+      if (!metrics?.height || !metrics?.weight) {
         router.replace('/(onboarding)/onBoardingForm');
         return;
       }

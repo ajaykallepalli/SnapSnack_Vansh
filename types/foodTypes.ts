@@ -1,28 +1,44 @@
-export interface DailyNutrition {
+export interface DailyNutritionLogs {
     id?: string;
     user_id: string;
     log_date: string;
-    calories_goal: number;
     calories_consumed: number;
-    protein_goal: number;
     protein_consumed: number;
-    carbs_goal: number;
     carbs_consumed: number;
-    fat_goal: number;
     fat_consumed: number;
     meals_data: MealLog[];
+    metadata?: any;
+    created_at: string;
+    updated_at?: string;
+  }
+
+  export interface DailyNutritionGoals {
+    id?: string;
+    user_id: string;
+    effective_date: string;
+    calories_goal: number;
+    protein_goal: number;
+    carbs_goal: number;
+    fat_goal: number;
     metadata?: any;
     created_at?: string;
     updated_at?: string;
   }
   
   export interface MealLog {
-    name: string;
+    id?: string;
+    user_id: string;
+    meal_type: string;
+    food_name: string;
     calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    time: string;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+    eaten_at: string;
+    message_id?: string;
+    nutrition_data?: any;
+    entry_source?: string;
+    created_at?: string;
   }
 
 export interface NutritionContextType {

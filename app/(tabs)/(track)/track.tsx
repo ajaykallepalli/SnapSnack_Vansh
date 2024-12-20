@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, TextInput } from 'react-native';
 import React from 'react';
 import { useNutritionContext } from '../../../services/nutritionContext';
-
+import { DailyNutritionService } from '~/services/dailyNutritionService';
+import { NutritionTrackingService } from '~/services/nutritionTracking';
 export default function TrackScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const [manualEntryVisible, setManualEntryVisible] = React.useState(false);
@@ -13,7 +14,7 @@ export default function TrackScreen() {
     carbs: '',
     fat: '',
   });
-  const { dailyNutrition, remainingNutrition } = useNutritionContext();
+  const { dailyNutritionLogs, dailyNutritionGoals, remainingNutrition } = useNutritionContext();
 
   const handleAddMeal = (meal: 'breakfast' | 'lunch' | 'snack' | 'dinner') => {
     setSelectedMeal(meal);
@@ -25,10 +26,24 @@ export default function TrackScreen() {
     setManualEntryVisible(true);
   };
 
-  const handleSaveEntry = () => {
-    // TODO: Add logic to save to nutrition context
-    setManualEntryVisible(false);
+  const handleSaveEntry = async (entryMethod: 'manual' | 'scan' | 'search') => {
+    const meal = {
+      user_id: dailyNutritionLogs!.user_id,
+      meal_type: selectedMeal!,
+      food_name: foodEntry.name,
+      calories: parseInt(foodEntry.calories),
+      protein_g: parseInt(foodEntry.protein), 
+      carbs_g: parseInt(foodEntry.carbs),
+      fat_g: parseInt(foodEntry.fat),
+      entry_method: entryMethod,
+      eaten_at: new Date().toISOString(),
+      logged_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    };
+    console.log('Meal to add:', meal);
+    await NutritionTrackingService.addMealToDB(meal);
     setFoodEntry({ name: '', calories: '', protein: '', carbs: '', fat: '' });
+    setManualEntryVisible(false);
   };
 
   return (
@@ -178,7 +193,7 @@ export default function TrackScreen() {
                 value={foodEntry.fat}
                 onChangeText={(text) => setFoodEntry(prev => ({ ...prev, fat: text }))}
               />
-              <Pressable style={styles.saveButton} onPress={handleSaveEntry}>
+              <Pressable style={styles.saveButton} onPress={() => handleSaveEntry('manual')}>
                 <Text style={styles.saveButtonText}>Save Entry</Text>
               </Pressable>
             </View>

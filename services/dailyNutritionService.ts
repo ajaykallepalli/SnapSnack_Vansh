@@ -63,4 +63,54 @@ export class DailyNutritionService {
       throw error;
     }
   }
+
+  static async ensureUpcomingGoals(userId: string) {
+    try {
+      const today = new Date();
+      const dates = Array.from({length: 7}, (_, i) => {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        return date.toISOString().split('T')[0];
+      });
+
+      // Get existing logs for the next 7 days
+      const { data: existingLogs } = await supabase
+        .from('daily_nutrition_goals')
+        .select('effective_date')
+        .eq('user_id', userId)
+        .in('effective_date', dates);
+
+      const existingDates = new Set(existingLogs?.map(log => log.effective_date));
+      
+      // Get current goals
+      const goals = await NutritionGoalsService.getUserNutritionGoals(userId);
+      if (!goals) throw new Error('No nutrition goals found');
+
+      // Create logs for missing dates
+      const newGoals = dates
+        .filter(date => !existingDates.has(date))
+        .map(date => ({
+          user_id: userId,
+          effective_date: date,
+          calories_goal: goals.calories_goal,
+          protein_goal: goals.protein_goal,
+          carbs_goal: goals.carbs_goal,
+          fat_goal: goals.fat_goal,
+          metadata: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+
+      if (newGoals.length > 0) {
+        const { error } = await supabase
+          .from('daily_nutrition_goals')
+          .insert(newGoals);
+
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error('Error ensuring upcoming goals:', error);
+      throw error;
+    }
+  }
 } 

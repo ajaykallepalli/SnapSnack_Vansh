@@ -45,6 +45,28 @@ export default function PlanScreen() {
             <Text style={styles.planButtonSubtext}>Set your morning meal</Text>
           </TouchableOpacity>
         </View>
+
+        <View style={styles.mealSlot}>
+          <View style={styles.mealHeader}>
+            <Text style={styles.mealTitle}>Lunch</Text>
+            <Text style={styles.mealTime}>12:00 PM</Text>
+          </View>
+          <TouchableOpacity style={styles.planButton}>
+            <Text style={styles.planButtonText}>+ Plan lunch</Text>
+            <Text style={styles.planButtonSubtext}>Set your afternoon meal</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.mealSlot}>
+          <View style={styles.mealHeader}>
+            <Text style={styles.mealTitle}>Dinner</Text>
+            <Text style={styles.mealTime}>6:00 PM</Text>
+          </View>
+          <TouchableOpacity style={styles.planButton}>
+            <Text style={styles.planButtonText}>+ Plan dinner</Text>
+            <Text style={styles.planButtonSubtext}>Set your evening meal</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );

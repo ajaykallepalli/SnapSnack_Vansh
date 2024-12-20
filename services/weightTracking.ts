@@ -1,7 +1,6 @@
 import { supabase } from '../utils/supabase';
 import { WeightEntry, UserMetrics } from '../types/foodTypes';
 
-
 export class NutritionGoalsService {
   private static ACTIVITY_MULTIPLIERS = {
     sedentary: 1.2,      // Little or no exercise
@@ -19,11 +18,11 @@ export class NutritionGoalsService {
       return (10 * metrics.currentWeight) + (6.25 * metrics.height) - (5 * metrics.age) - 161;
     }
   }
-
+  // TODO: Add ability to adjust based on time goals
   static calculateDailyCalories(metrics: UserMetrics): number {
     const bmr = this.calculateBMR(metrics);
     const tdee = bmr * this.ACTIVITY_MULTIPLIERS[metrics.activityLevel];
-    
+
     // Calculate weekly weight change goal
     const weeklyWeightDiff = metrics.currentWeight - metrics.goalWeight;
     const weeklyCalorieAdjustment = weeklyWeightDiff * 1100; // ~7700 calories per kg / 7 days
@@ -40,9 +39,8 @@ export class NutritionGoalsService {
     return Math.round(tdee + dailyAdjustment);
   }
 
-  static async updateUserNutritionGoals(userId: string, metrics: UserMetrics) {
+  static async updateUserNutritionGoals(metrics: UserMetrics) {
     const dailyCalories = this.calculateDailyCalories(metrics);
-    
     // Calculate macros based on bodyweight and goals
     const protein = Math.round(metrics.currentWeight * 2.2); // 1g per lb of bodyweight
     const proteinCals = protein * 4;
@@ -50,20 +48,25 @@ export class NutritionGoalsService {
     const fat = Math.round((remainingCals * 0.3) / 9); // 30% of remaining calories from fat
     const carbs = Math.round((remainingCals - (fat * 9)) / 4); // Rest from carbs
 
-    const nutritionGoals = {
-      calories: dailyCalories,
-      protein,
-      carbs,
-      fat,
-      updated_at: new Date().toISOString()
-    };
+    const today = new Date().toISOString();
 
+    const nutritionGoals = {
+      calories_goal: dailyCalories,
+      protein_goal: protein,
+      carbs_goal: carbs,
+      fat_goal: fat,
+      effective_date: today,
+      updated_at: today,
+    };
+    console.log('Nutrition goals:', nutritionGoals);
     const { error } = await supabase
-      .from('user_nutrition_goals')
+      .from('daily_nutrition_goals')
       .upsert({
-        user_id: userId,
+        user_id: metrics.user_id,
         ...nutritionGoals
-      });
+      })
+      .select()
+      .single();
 
     if (error) throw error;
     return nutritionGoals;
@@ -71,13 +74,13 @@ export class NutritionGoalsService {
 
   static async getUserNutritionGoals(userId: string) {
     const { data, error } = await supabase
-      .from('user_nutrition_goals')
+      .from('daily_nutrition_goals')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
-    return data;
+    if (data) return data;
+    return null;
   }
 }
 
@@ -91,7 +94,7 @@ export class WeightTrackingService {
     };
 
     const { data, error } = await supabase
-      .from('weight_entries')
+      .from('weight_logs')
       .insert(entry)
       .select()
       .single();
@@ -165,7 +168,7 @@ export class WeightTrackingService {
       .from('user_metrics')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (metricsError) throw metricsError;
 
@@ -184,7 +187,7 @@ export class WeightTrackingService {
       if (updateError) throw updateError;
 
       // Recalculate nutrition goals with new weight
-      await NutritionGoalsService.updateUserNutritionGoals(userId, updatedMetrics);
+      await NutritionGoalsService.updateUserNutritionGoals(updatedMetrics);
     }
   }
 } 

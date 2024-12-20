@@ -67,7 +67,7 @@ export default function OnboardingScreen() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (existingError && existingError.code !== 'PGRST116') {
         throw existingError;
@@ -101,7 +101,7 @@ export default function OnboardingScreen() {
           age: parseInt(formData.age || '0'),
           gender: formData.gender,
           activity_level: formData.activityLevel,
-          goal: formData.goal
+          goal_weight: parseFloat(formData.goal || '0'),
         });
 
       if (metricsError) {
@@ -109,7 +109,7 @@ export default function OnboardingScreen() {
         throw new Error(`Failed to save metrics: ${metricsError.message}`);
       }
 
-      router.replace('/(tabs)/(home)');
+      router.replace('/(tabs)/');
     } catch (error) {
       console.error('Error saving user data:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to save your information');

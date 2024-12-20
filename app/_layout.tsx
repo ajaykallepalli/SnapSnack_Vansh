@@ -23,5 +23,4 @@ const _layout = () => {
     </NutritionProvider>
   )
 }
-
 export default _layout

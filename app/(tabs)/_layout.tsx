@@ -1,5 +1,5 @@
 // _layout.tsx
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { 
   View, 
   Text, 
@@ -18,10 +18,10 @@ import { useNutritionContext } from '../../services/nutritionContext';
 import { useState } from 'react';
 
 export default function ChatTabsLayout() {
+  const { remainingNutrition } = useNutritionContext();
   const { sendMessage, isLoading } = useChatContext();
   const [inputText, setInputText] = useState('');
   const listRef = useRef<FlatList>(null);
-  const { remainingNutrition } = useNutritionContext();
   
   const handleSend = async () => {
     if (!inputText.trim()) return;
@@ -29,6 +29,7 @@ export default function ChatTabsLayout() {
       const messageToSend = inputText;
       setInputText('');
       Keyboard.dismiss();
+      router.push('/(tabs)/(chat)');
       await sendMessage(messageToSend);
       if (listRef.current) {
         listRef.current.scrollToEnd({ animated: true });
@@ -48,10 +49,9 @@ export default function ChatTabsLayout() {
         <View style={styles.header}>
           <Text style={styles.title}>Snap Snack</Text>
           <View style={styles.caloriesBadge}>
-            <Text style={styles.caloriesText}>{remainingNutrition.calories} cals left</Text>
+            <Text style={styles.caloriesText}>{remainingNutrition.calories_goal - remainingNutrition.calories_consumed} cals left</Text>
           </View>
         </View>
-        
         <View style={styles.contentContainer}>
           <Tabs 
             screenOptions={{

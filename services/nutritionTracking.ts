@@ -24,7 +24,7 @@ export class NutritionTrackingService {
       .select('*')
       .eq('user_id', userId)
       .eq('log_date', date)
-      .single();
+      .maybeSingle();
     
     if (error) throw error;
     this._currentLog = data;
@@ -38,16 +38,13 @@ export class NutritionTrackingService {
       .upsert({
         user_id: log.user_id,
         log_date: log.log_date,
-        calories_goal: log.calories_goal,
         calories_consumed: log.calories_consumed,
-        protein_goal: log.protein_goal,
         protein_consumed: log.protein_consumed,
-        carbs_goal: log.carbs_goal,
         carbs_consumed: log.carbs_consumed,
-        fat_goal: log.fat_goal,
         fat_consumed: log.fat_consumed,
         meals_data: log.meals_data,
         metadata: log.metadata,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
 

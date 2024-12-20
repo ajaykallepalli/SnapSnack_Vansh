@@ -29,15 +29,20 @@ export interface NutritionContextType {
     dailyNutrition: DailyNutrition | null;
     updateDailyNutrition: (meal: MealLog) => Promise<void>;
     remainingNutrition: {
-      calories: number;
-      protein: number;
-      carbs: number;
-      fat: number;
+      calories_goal: number;
+      calories_consumed: number;
+      protein_goal: number;
+      protein_consumed: number;
+      carbs_goal: number;
+      carbs_consumed: number;
+      fat_goal: number;
+      fat_consumed: number;
     };
     isLoading: boolean;
   }
 
 export interface UserMetrics {
+    user_id: string;
     currentWeight: number;  // in kg
     goalWeight: number;     // in kg
     height: number;        // in cm

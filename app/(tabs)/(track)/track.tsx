@@ -9,36 +9,35 @@ export default function TrackScreen() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Today's Progress</Text>
-          <Text style={styles.caloriesLeft}>{remainingNutrition?.calories_consumed} left</Text>
+          <Text style={styles.caloriesLeft}>{remainingNutrition.calories_goal - remainingNutrition.calories_consumed} cals left</Text>
         </View>
 
         <View style={styles.progressSection}>
           <View style={styles.progressRow}>
             <Text style={styles.macroLabel}>Protein</Text>
             <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.proteinBar, { width: `${(dailyNutrition?.protein_consumed / dailyNutrition?.protein_goal) * 100}%` }]} />
+              <View style={[styles.progressBar, styles.proteinBar, { width: `${(remainingNutrition.protein_goal - remainingNutrition.protein_consumed) / remainingNutrition.protein_goal * 100}%` }]} />
             </View>
-            <Text style={styles.macroValue}>{remainingNutrition.protein}g left</Text>
+            <Text style={styles.macroValue}>{remainingNutrition.protein_goal - remainingNutrition.protein_consumed}g left</Text>
           </View>
 
           <View style={styles.progressRow}>
             <Text style={styles.macroLabel}>Carbs</Text>
             <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.carbsBar, { width: `${(dailyNutrition?.carbs_consumed / dailyNutrition?.carbs_goal) * 100}%` }]} />
+              <View style={[styles.progressBar, styles.carbsBar, { width: `${(remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed) / remainingNutrition.carbs_goal * 100}%` }]} />
             </View>
-            <Text style={styles.macroValue}>{remainingNutrition.carbs}g left</Text>
+            <Text style={styles.macroValue}>{remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed}g left</Text>
           </View>
-    
+
           <View style={styles.progressRow}>
             <Text style={styles.macroLabel}>Fat</Text>
             <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.fatBar, { width: `${(dailyNutrition?.fat_consumed / dailyNutrition?.fat_goal) * 100}%` }]} />
+              <View style={[styles.progressBar, styles.fatBar, { width: `${(remainingNutrition.fat_goal - remainingNutrition.fat_consumed) / remainingNutrition.fat_goal * 100}%` }]} />
             </View>
-            <Text style={styles.macroValue}>{remainingNutrition.fat}g left</Text>
+            <Text style={styles.macroValue}>{remainingNutrition.fat_goal - remainingNutrition.fat_consumed}g left</Text>
           </View>
         </View>
       </View>
-
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Today's Meals</Text>
         <View style={styles.mealList}>
@@ -46,6 +45,24 @@ export default function TrackScreen() {
             <Text style={styles.mealIcon}>☕️</Text>
             <View style={styles.mealInfo}>
               <Text style={styles.mealTitle}>Breakfast</Text>
+              <Text style={styles.mealStatus}>No meals logged</Text>
+            </View>
+            <Text style={styles.addButton}>Add</Text>
+          </View>
+
+          <View style={styles.mealItem}>
+            <Text style={styles.mealIcon}>🍽️</Text>
+            <View style={styles.mealInfo}>
+              <Text style={styles.mealTitle}>Lunch</Text>
+              <Text style={styles.mealStatus}>No meals logged</Text>
+            </View>
+            <Text style={styles.addButton}>Add</Text>
+          </View>
+
+          <View style={styles.mealItem}>
+            <Text style={styles.mealIcon}>🌙</Text>
+            <View style={styles.mealInfo}>
+              <Text style={styles.mealTitle}>Dinner</Text>
               <Text style={styles.mealStatus}>No meals logged</Text>
             </View>
             <Text style={styles.addButton}>Add</Text>

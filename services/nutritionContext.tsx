@@ -46,14 +46,14 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
   const updateDailyGoals = async (metrics: UserMetrics) => {
     if (!dailyNutrition) return;
 
-    const nutritionGoals = await NutritionGoalsService.updateUserNutritionGoals(metrics.user_id, metrics);
+    const nutritionGoals = await NutritionGoalsService.updateUserNutritionGoals(metrics);
     
     const updatedNutrition = {
       ...dailyNutrition,
-      calories_goal: nutritionGoals.calories,
-      protein_goal: nutritionGoals.protein,
-      carbs_goal: nutritionGoals.carbs,
-      fat_goal: nutritionGoals.fat,
+      calories_goal: nutritionGoals.calories_goal,
+      protein_goal: nutritionGoals.protein_goal,
+      carbs_goal: nutritionGoals.carbs_goal,
+      fat_goal: nutritionGoals.fat_goal,
     };
 
     await NutritionTrackingService.updateDailyLog(updatedNutrition);
@@ -69,8 +69,9 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
       }
 
       const today = new Date().toISOString().split('T')[0];
+      console.log('Getting daily log for', session.user.id, today);
       let log = await NutritionTrackingService.getDailyLog(session.user.id, today);
-      
+      console.log('Daily log:', log);
       if (!log) {
         // Get current nutrition goals from the service
         const nutritionGoals = await NutritionGoalsService.getUserNutritionGoals(session.user.id);

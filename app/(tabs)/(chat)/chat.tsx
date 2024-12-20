@@ -37,9 +37,9 @@ export default function ChatScreen() {
             Here's how you're doing so far:
           </Text>
           <Text style={styles.nutritionText}>
-            🥩 Protein: {remainingNutrition.protein}g left{'\n'}
-            🌾 Carbs: {remainingNutrition.carbs}g left{'\n'}
-            🥑 Fat: {remainingNutrition.fat}g left
+            🥩 Protein: {remainingNutrition.protein_goal - remainingNutrition.protein_consumed}g left{'\n'}
+            🌾 Carbs: {remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed}g left{'\n'} 
+            🥑 Fat: {remainingNutrition.fat_goal - remainingNutrition.fat_consumed}g left
           </Text>
           <Text style={styles.questionText}>
             Would you like to plan your lunch?
@@ -56,9 +56,8 @@ export default function ChatScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        //TODO: Add a new chat button and reset screen to show new messages and create a new chat session
+        {/* TODO: Add a new chat button and reset screen to show new messages and create a new chat session */}
         {messages && messages.map((msg, index) => {
-          console.log('Rendering message:', msg); // Debug log
           return (
             <View 
               key={index}
@@ -79,6 +78,7 @@ export default function ChatScreen() {
         <View style={{ height: 25 }} />
       </ScrollView>
     </View>
+    
   );
 }
 

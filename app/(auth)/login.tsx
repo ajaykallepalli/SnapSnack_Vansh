@@ -38,7 +38,7 @@ export default function LoginPage() {
       .from('user_metrics')
       .select('*')
       .eq('user_id', session?.user.id)
-      .single();
+      .maybeSingle();
 
     if (metrics?.weight && metrics?.height) {
       router.replace('/(tabs)/');

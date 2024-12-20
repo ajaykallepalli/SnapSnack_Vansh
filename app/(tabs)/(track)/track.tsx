@@ -1,75 +1,191 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Modal, TextInput } from 'react-native';
 import React from 'react';
 import { useNutritionContext } from '../../../services/nutritionContext';
 
 export default function TrackScreen() {
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [manualEntryVisible, setManualEntryVisible] = React.useState(false);
+  const [selectedMeal, setSelectedMeal] = React.useState<'breakfast' | 'lunch' | 'snack' | 'dinner' | null>(null);
+  const [foodEntry, setFoodEntry] = React.useState({
+    name: '',
+    calories: '',
+    protein: '',
+    carbs: '',
+    fat: '',
+  });
   const { dailyNutrition, remainingNutrition } = useNutritionContext();
+
+  const handleAddMeal = (meal: 'breakfast' | 'lunch' | 'snack' | 'dinner') => {
+    setSelectedMeal(meal);
+    setModalVisible(true);
+  };
+
+  const handleManualEntry = () => {
+    setModalVisible(false);
+    setManualEntryVisible(true);
+  };
+
+  const handleSaveEntry = () => {
+    // TODO: Add logic to save to nutrition context
+    setManualEntryVisible(false);
+    setFoodEntry({ name: '', calories: '', protein: '', carbs: '', fat: '' });
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Today's Progress</Text>
-          <Text style={styles.caloriesLeft}>{remainingNutrition.calories_goal - remainingNutrition.calories_consumed} cals left</Text>
-        </View>
-
-        <View style={styles.progressSection}>
-          <View style={styles.progressRow}>
-            <Text style={styles.macroLabel}>Protein</Text>
-            <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.proteinBar, { width: `${(remainingNutrition.protein_goal - remainingNutrition.protein_consumed) / remainingNutrition.protein_goal * 100}%` }]} />
-            </View>
-            <Text style={styles.macroValue}>{remainingNutrition.protein_goal - remainingNutrition.protein_consumed}g left</Text>
+    <>
+      <ScrollView style={styles.container}>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Today's Progress</Text>
+            <Text style={styles.caloriesLeft}>{remainingNutrition.calories_goal - remainingNutrition.calories_consumed} cals left</Text>
           </View>
 
-          <View style={styles.progressRow}>
-            <Text style={styles.macroLabel}>Carbs</Text>
-            <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.carbsBar, { width: `${(remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed) / remainingNutrition.carbs_goal * 100}%` }]} />
+          <View style={styles.progressSection}>
+            <View style={styles.progressRow}>
+              <Text style={styles.macroLabel}>Protein</Text>
+              <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBar, styles.proteinBar, { width: `${(remainingNutrition.protein_goal - remainingNutrition.protein_consumed) / remainingNutrition.protein_goal * 100}%` }]} />
+              </View>
+              <Text style={styles.macroValue}>{remainingNutrition.protein_goal - remainingNutrition.protein_consumed}g left</Text>
             </View>
-            <Text style={styles.macroValue}>{remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed}g left</Text>
-          </View>
 
-          <View style={styles.progressRow}>
-            <Text style={styles.macroLabel}>Fat</Text>
-            <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, styles.fatBar, { width: `${(remainingNutrition.fat_goal - remainingNutrition.fat_consumed) / remainingNutrition.fat_goal * 100}%` }]} />
+            <View style={styles.progressRow}>
+              <Text style={styles.macroLabel}>Carbs</Text>
+              <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBar, styles.carbsBar, { width: `${(remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed) / remainingNutrition.carbs_goal * 100}%` }]} />
+              </View>
+              <Text style={styles.macroValue}>{remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed}g left</Text>
             </View>
-            <Text style={styles.macroValue}>{remainingNutrition.fat_goal - remainingNutrition.fat_consumed}g left</Text>
-          </View>
-        </View>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Today's Meals</Text>
-        <View style={styles.mealList}>
-          <View style={styles.mealItem}>
-            <Text style={styles.mealIcon}>☕️</Text>
-            <View style={styles.mealInfo}>
-              <Text style={styles.mealTitle}>Breakfast</Text>
-              <Text style={styles.mealStatus}>No meals logged</Text>
-            </View>
-            <Text style={styles.addButton}>Add</Text>
-          </View>
 
-          <View style={styles.mealItem}>
-            <Text style={styles.mealIcon}>🍽️</Text>
-            <View style={styles.mealInfo}>
-              <Text style={styles.mealTitle}>Lunch</Text>
-              <Text style={styles.mealStatus}>No meals logged</Text>
+            <View style={styles.progressRow}>
+              <Text style={styles.macroLabel}>Fat</Text>
+              <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBar, styles.fatBar, { width: `${(remainingNutrition.fat_goal - remainingNutrition.fat_consumed) / remainingNutrition.fat_goal * 100}%` }]} />
+              </View>
+              <Text style={styles.macroValue}>{remainingNutrition.fat_goal - remainingNutrition.fat_consumed}g left</Text>
             </View>
-            <Text style={styles.addButton}>Add</Text>
-          </View>
-
-          <View style={styles.mealItem}>
-            <Text style={styles.mealIcon}>🌙</Text>
-            <View style={styles.mealInfo}>
-              <Text style={styles.mealTitle}>Dinner</Text>
-              <Text style={styles.mealStatus}>No meals logged</Text>
-            </View>
-            <Text style={styles.addButton}>Add</Text>
           </View>
         </View>
-      </View>
-    </ScrollView>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Today's Meals</Text>
+          <View style={styles.mealList}>
+            {['breakfast', 'lunch', 'snack', 'dinner'].map((meal) => (
+              <View key={meal} style={styles.mealItem}>
+                <Text style={styles.mealIcon}>
+                  {meal === 'breakfast' ? '☕️' : meal === 'lunch' ? '🍽️' : meal === 'snack' ? '🍩' : '🌙'}
+                </Text>
+                <View style={styles.mealInfo}>
+                  <Text style={styles.mealTitle}>{meal.charAt(0).toUpperCase() + meal.slice(1)}</Text>
+                  <Text style={styles.mealStatus}>No meals logged</Text>
+                </View>
+                <Pressable onPress={() => handleAddMeal(meal as any)}>
+                  <Text style={styles.addButton}>Add</Text>
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay} 
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add Food To {selectedMeal?.charAt(0).toUpperCase() + selectedMeal?.slice(1)}</Text>
+              <Pressable onPress={() => setModalVisible(false)}>
+                <Text style={styles.closeButton}>✕</Text>
+              </Pressable>
+            </View>
+            
+            <View style={styles.addOptions}>
+              <Pressable style={styles.optionButton}>
+                <Text style={styles.optionIcon}>📸</Text>
+                <Text style={styles.optionText}>Scan Food</Text>
+              </Pressable>
+              
+              <Pressable style={styles.optionButton}>
+                <Text style={styles.optionIcon}>🔍</Text>
+                <Text style={styles.optionText}>Search Food</Text>
+              </Pressable>
+              
+              <Pressable style={styles.optionButton} onPress={handleManualEntry}>
+                <Text style={styles.optionIcon}>✏️</Text>
+                <Text style={styles.optionText}>Manual Entry</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={manualEntryVisible}
+        onRequestClose={() => setManualEntryVisible(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay} 
+          onPress={() => setManualEntryVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Manual Food Entry</Text>
+              <Pressable onPress={() => setManualEntryVisible(false)}>
+                <Text style={styles.closeButton}>✕</Text>
+              </Pressable>
+            </View>
+            
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Food name"
+                value={foodEntry.name}
+                onChangeText={(text) => setFoodEntry(prev => ({ ...prev, name: text }))}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Calories"
+                keyboardType="numeric"
+                value={foodEntry.calories}
+                onChangeText={(text) => setFoodEntry(prev => ({ ...prev, calories: text }))}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Protein (g)"
+                keyboardType="numeric"
+                value={foodEntry.protein}
+                onChangeText={(text) => setFoodEntry(prev => ({ ...prev, protein: text }))}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Carbs (g)"
+                keyboardType="numeric"
+                value={foodEntry.carbs}
+                onChangeText={(text) => setFoodEntry(prev => ({ ...prev, carbs: text }))}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Fat (g)"
+                keyboardType="numeric"
+                value={foodEntry.fat}
+                onChangeText={(text) => setFoodEntry(prev => ({ ...prev, fat: text }))}
+              />
+              <Pressable style={styles.saveButton} onPress={handleSaveEntry}>
+                <Text style={styles.saveButtonText}>Save Entry</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
@@ -158,5 +274,77 @@ const styles = StyleSheet.create({
   addButton: {
     color: '#007AFF',
     fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  closeButton: {
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  addOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 20,
+  },
+  optionButton: {
+    alignItems: 'center',
+    padding: 10,
+  },
+  optionIcon: {
+    fontSize: 20,
+  },
+  optionText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  inputContainer: {
+    gap: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 }); 

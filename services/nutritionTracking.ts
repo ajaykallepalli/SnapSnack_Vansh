@@ -1,6 +1,6 @@
 // NutritionTracking.ts
 import { supabase } from '../utils/supabase';
-import { DailyNutritionLogs, MealLog } from '../types/foodTypes';
+import { DailyNutritionGoals, DailyNutritionLogs, MealLog } from '../types/foodTypes';
 import { useState, useEffect } from 'react';
 export class NutritionTrackingService {
   private static _currentLog: DailyNutritionLogs | null = null;
@@ -29,6 +29,16 @@ export class NutritionTrackingService {
     if (error) throw error;
     this._currentLog = data;
     this.notifySubscribers();
+    return data;
+  }
+
+  static async getDailyGoals(userId: string, date: string): Promise<DailyNutritionGoals | null> {
+    const { data, error } = await supabase
+      .from('daily_nutrition_goals')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('effective_date', date)
+      .maybeSingle();
     return data;
   }
 

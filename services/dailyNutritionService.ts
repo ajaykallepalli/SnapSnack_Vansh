@@ -76,7 +76,7 @@ export class DailyNutritionService {
       // Get existing logs for the next 7 days
       const { data: existingLogs } = await supabase
         .from('daily_nutrition_goals')
-        .select('effective_date')
+        .select('*')
         .eq('user_id', userId)
         .in('effective_date', dates);
 
@@ -108,6 +108,11 @@ export class DailyNutritionService {
 
         if (error) throw error;
       }
+
+      // Return today's goals
+      const todayStr = today.toISOString().split('T')[0];
+      const todayGoals = existingLogs?.find(log => log.effective_date === todayStr) || newGoals.find(log => log.effective_date === todayStr);
+      return todayGoals || goals;
     } catch (error) {
       console.error('Error ensuring upcoming goals:', error);
       throw error;

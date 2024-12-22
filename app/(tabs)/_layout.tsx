@@ -18,7 +18,9 @@ import { useNutritionContext } from '../../services/nutritionContext';
 import { useState } from 'react';
 
 export default function ChatTabsLayout() {
-  const { remainingNutrition } = useNutritionContext();
+  const { dailyNutritionLogs, dailyNutritionGoals } = useNutritionContext();
+  console.log('dailyNutritionLogs', dailyNutritionLogs);
+  console.log('dailyNutritionGoals', dailyNutritionGoals);
   const { sendMessage, isLoading } = useChatContext();
   const [inputText, setInputText] = useState('');
   const listRef = useRef<FlatList>(null);
@@ -49,7 +51,7 @@ export default function ChatTabsLayout() {
         <View style={styles.header}>
           <Text style={styles.title}>Snap Snack</Text>
           <View style={styles.caloriesBadge}>
-            <Text style={styles.caloriesText}>{remainingNutrition.calories_goal - remainingNutrition.calories_consumed} cals left</Text>
+            <Text style={styles.caloriesText}>{dailyNutritionGoals?.calories_goal - dailyNutritionLogs?.calories_consumed} cals left</Text>
           </View>
         </View>
         <View style={styles.contentContainer}>

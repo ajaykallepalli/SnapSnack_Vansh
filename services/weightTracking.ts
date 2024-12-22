@@ -77,8 +77,10 @@ export class NutritionGoalsService {
       .from('daily_nutrition_goals')
       .select('*')
       .eq('user_id', userId)
+      .eq('effective_date', new Date().toISOString().split('T')[0])
       .maybeSingle();
 
+    if (error) throw error;
     if (data) return data;
     return null;
   }

@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { NutritionTrackingService } from './nutritionTracking';
 import { NutritionGoalsService } from './weightTracking';
+import { DailyNutritionService } from './dailyNutritionService';
 import { supabase } from '../utils/supabase';
-import type { DailyNutritionLogs, MealLog, NutritionContextType, UserMetrics } from '../types/foodTypes';
+import type { DailyNutritionGoals, DailyNutritionLogs, MealLog, NutritionContextType, UserMetrics } from '../types/foodTypes';
 
 const NutritionContext = createContext<NutritionContextType | undefined>(undefined);
 
@@ -18,73 +19,39 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
     fat: (dailyNutritionGoals?.fat_goal ?? 0) - (dailyNutritionLogs?.fat_consumed ?? 0),
   };
 
-  useEffect(() => {
-    loadTodayNutrition();
-
-    // Subscribe to changes in user_metrics
-    const metricsSubscription = supabase
-      .channel('user_metrics_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_metrics'
-        },
-        async (payload) => {
-          if (payload.new) {
-            await updateDailyGoals(payload.new as UserMetrics);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      metricsSubscription.unsubscribe();
-    };
-  }, []);
-
-  const updateDailyGoals = async (metrics: UserMetrics) => {
-    if (!dailyNutritionGoals) return;
-
-    const nutritionGoals = await NutritionGoalsService.updateUserNutritionGoals(metrics);
-    
-    const updatedNutrition = {
-      ...dailyNutritionGoals,
-      calories_goal: nutritionGoals.calories_goal,
-      protein_goal: nutritionGoals.protein_goal,
-      carbs_goal: nutritionGoals.carbs_goal,
-      fat_goal: nutritionGoals.fat_goal,
-    };
-
-    await NutritionTrackingService.updateDailyLog(updatedNutrition);
-    setDailyNutritionGoals(updatedNutrition);
-  };
-
   const loadTodayNutrition = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setDailyNutritionLogs(null);
+        setDailyNutritionGoals(null);
         return;
       }
 
       const today = new Date().toISOString().split('T')[0];
-      console.log('Getting daily log for', session.user.id, today);
+
+      let goals = await NutritionTrackingService.getDailyGoals(session.user.id, today);
+
+      if (!goals) {
+        goals = await DailyNutritionService.ensureUpcomingGoals(session.user.id);
+      }
+
+      setDailyNutritionGoals(goals);
+
       let log = await NutritionTrackingService.getDailyLog(session.user.id, today);
-      console.log('Daily log:', log);
+      
       if (!log) {
-        // Get current nutrition goals from the service
-        const nutritionGoals = await NutritionGoalsService.getUserNutritionGoals(session.user.id);
-        
         log = {
           user_id: session.user.id,
           log_date: today,
-          calories_goal: nutritionGoals.calories,
-          protein_goal: nutritionGoals.protein,
-          carbs_goal: nutritionGoals.carbs,
-          fat_goal: nutritionGoals.fat,
+          calories_consumed: 0,
+          protein_consumed: 0,
+          carbs_consumed: 0,
+          fat_consumed: 0,
           meals_data: [],
+          metadata: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
         await NutritionTrackingService.updateDailyLog(log);
       }
@@ -93,51 +60,62 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Error loading nutrition:', error);
       setDailyNutritionLogs(null);
+      setDailyNutritionGoals(null);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Subscribe to NutritionTrackingService updates
+  useEffect(() => {
+    return NutritionTrackingService.subscribe((log) => {
+      if (log) {
+        setDailyNutritionLogs(log);
+        // Also refresh goals since they might have changed
+        const today = new Date().toISOString().split('T')[0];
+        NutritionTrackingService.getDailyGoals(log.user_id, today)
+          .then(goals => {
+            if (goals) setDailyNutritionGoals(goals);
+          })
+          .catch(console.error);
+      }
+    });
+  }, []);
 
   const updateDailyNutrition = async (meal: MealLog) => {
     try {
-      setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No active session');
-
-      const today = new Date().toISOString().split('T')[0];
-      const currentLog = dailyNutritionLogs || {
-        user_id: session.user.id,
-        log_date: today,
-        calories_consumed: dailyNutritionLogs?.calories_consumed ?? 0,
-        protein_consumed: dailyNutritionLogs?.protein_consumed ?? 0,
-        carbs_consumed: dailyNutritionLogs?.carbs_consumed ?? 0,
-        fat_consumed: dailyNutritionLogs?.fat_consumed ?? 0,
-      };
-
-      const updatedLog = {
-        ...currentLog,
-        calories_consumed: (currentLog.calories_consumed ?? 0) + meal.calories,
-        protein_consumed: (currentLog.protein_consumed ?? 0) + meal.protein_g,
-        carbs_consumed: (currentLog.carbs_consumed ?? 0) + meal.carbs_g,
-        fat_consumed: (currentLog.fat_consumed ?? 0) + meal.fat_g,
-      };
-
-      await NutritionTrackingService.updateDailyLog(updatedLog);
-      setDailyNutritionLogs(updatedLog);
+      // Just call addMealToDB - the subscription will handle state updates
+      await NutritionTrackingService.addMealToDB(meal);
     } catch (error) {
-      console.error('Error updating nutrition:', error);
+      console.error('Error updating daily nutrition:', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  // Initial load and midnight refresh
+  useEffect(() => {
+    loadTodayNutrition();
+    
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    const timeout = setTimeout(() => {
+      loadTodayNutrition();
+    }, timeUntilMidnight);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const contextValue: NutritionContextType = {
     dailyNutritionLogs,
     dailyNutritionGoals,
-    updateDailyNutrition,
     remainingNutrition,
+    updateDailyNutrition,
     isLoading,
+    refreshNutrition: loadTodayNutrition
   };
 
   return (

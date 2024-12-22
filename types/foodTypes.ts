@@ -42,20 +42,18 @@ export interface DailyNutritionLogs {
   }
 
 export interface NutritionContextType {
-    dailyNutrition: DailyNutrition | null;
-    updateDailyNutrition: (meal: MealLog) => Promise<void>;
-    remainingNutrition: {
-      calories_goal: number;
-      calories_consumed: number;
-      protein_goal: number;
-      protein_consumed: number;
-      carbs_goal: number;
-      carbs_consumed: number;
-      fat_goal: number;
-      fat_consumed: number;
-    };
-    isLoading: boolean;
-  }
+  dailyNutritionLogs: DailyNutritionLogs | null;
+  dailyNutritionGoals: DailyNutritionGoals | null;
+  remainingNutrition: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  updateDailyNutrition: (meal: MealLog) => Promise<void>;
+  isLoading: boolean;
+  refreshNutrition: () => Promise<void>;
+}
 
 export interface UserMetrics {
     user_id: string;

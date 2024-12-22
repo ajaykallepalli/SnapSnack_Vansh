@@ -4,6 +4,8 @@ import { ChatSessionService } from './chatSession';
 import { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import Cerebras from '@cerebras/cerebras_cloud_sdk';
+import { useNutritionContext } from './nutritionContext';
+import { DailyNutritionLogs, DailyNutritionGoals } from '~/types/foodTypes';
 
 const client = new Cerebras({
   apiKey: process.env.EXPO_PUBLIC_CEREBRAS_API_KEY,
@@ -22,22 +24,32 @@ export class ChatService {
 
   static async getChatCompletion(
     messages: ChatMessage[],
-    nutritionContext: NutritionContext
+    nutritionData: {
+      dailyNutritionGoals: DailyNutritionGoals | null;
+      dailyNutritionLogs: DailyNutritionLogs | null;
+    }
   ) {
-    // Prepare context-aware messages
     const contextualizedMessages: ChatMessage[] = [
       { role: 'system', content: this.SYSTEM_PROMPT },
       {
         role: 'system',
         content: `User's current goals: 
-        Daily Calories: ${nutritionContext.userGoals.calories}
-        Protein: ${nutritionContext.userGoals.protein}g
-        Carbs: ${nutritionContext.userGoals.carbs}g
-        Fat: ${nutritionContext.userGoals.fat}g`
+        Daily Calories: ${nutritionData.dailyNutritionGoals?.calories_goal}
+        Protein: ${nutritionData.dailyNutritionGoals?.protein_goal}g
+        Carbs: ${nutritionData.dailyNutritionGoals?.carbs_goal}g
+        Fat: ${nutritionData.dailyNutritionGoals?.fat_goal}g`
       },
       {
         role: 'system',
-        content: `Recent meals: ${JSON.stringify(nutritionContext.recentMeals)}`
+        content: `User's current overall daily nutrition: 
+        Daily Calories: ${nutritionData.dailyNutritionLogs?.calories_consumed}
+        Protein: ${nutritionData.dailyNutritionLogs?.protein_consumed}g
+        Carbs: ${nutritionData.dailyNutritionLogs?.carbs_consumed}g
+        Fat: ${nutritionData.dailyNutritionLogs?.fat_consumed}g`
+      },
+      {
+        role: 'system',
+        content: `Recent meals: ${JSON.stringify(nutritionData.dailyNutritionLogs?.meals_data)}`
       },
       ...messages
     ];
@@ -117,6 +129,7 @@ export const useChatState = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentChatSessionId, setCurrentChatSessionId] = useState<string | null>(null);
+  const nutritionContext = useNutritionContext();
 
   const initializeChatSession = async (userId: string) => {
     const chatSession = await ChatSessionService.createChatSession(userId);
@@ -130,43 +143,23 @@ export const useChatState = () => {
     setIsLoading(true);
     try {
       const userMessage: ChatMessage = { role: 'user', content };
-      console.log('1. Sending message:', userMessage);
       
-      setMessages(currentMessages => {
-        const newMessages = [...currentMessages, userMessage];
-        console.log('2. Messages after user input:', newMessages);
-        return newMessages;
-      });
+      setMessages(currentMessages => [...currentMessages, userMessage]);
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No active auth session');
 
-      // Initialize chat session if needed
       const chatSessionId = currentChatSessionId || await initializeChatSession(session.user.id);
       
-      //TODO: Remove this after testing
-      console.log('Chat session ID:', chatSessionId);
-
-      // Get nutrition context
-      // TODO: Implement this from supabase
-      //const nutritionContext = await fetchUserNutritionContext();
-      const nutritionContext: NutritionContext = {
-        userGoals: {
-          calories: 2000,
-          protein: 150,
-          carbs: 200,
-          fat: 65
-        },
-        recentMeals: [],
-      };
-
-      // Get AI response
-      console.log('Getting AI response...');
+      const { dailyNutritionGoals, dailyNutritionLogs } = nutritionContext;
+      
       const aiResponse = await ChatService.getChatCompletion(
         [...messages, userMessage],
-        nutritionContext
+        {
+          dailyNutritionGoals,
+          dailyNutritionLogs
+        }
       );
-      console.log('3. AI Response received:', aiResponse);
 
       const aiMessage: ChatMessage = {
         role: 'assistant',

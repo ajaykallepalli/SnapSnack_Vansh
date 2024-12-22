@@ -5,7 +5,7 @@ import { useNutritionContext } from '../../../services/nutritionContext';
 
 export default function ChatScreen() {
   const { messages } = useChatContext();
-  const { remainingNutrition } = useNutritionContext();
+  const { dailyNutritionLogs, dailyNutritionGoals } = useNutritionContext();
   useEffect(() => {
     console.log('Chat screen messages:', messages);
   }, [messages]);
@@ -37,9 +37,9 @@ export default function ChatScreen() {
             Here's how you're doing so far:
           </Text>
           <Text style={styles.nutritionText}>
-            🥩 Protein: {remainingNutrition.protein_goal - remainingNutrition.protein_consumed}g left{'\n'}
-            🌾 Carbs: {remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed}g left{'\n'} 
-            🥑 Fat: {remainingNutrition.fat_goal - remainingNutrition.fat_consumed}g left
+            🥩 Protein: {dailyNutritionGoals?.protein_goal - dailyNutritionLogs?.protein_consumed}g left{'\n'}
+            🌾 Carbs: {dailyNutritionGoals?.carbs_goal - dailyNutritionLogs?.carbs_consumed}g left{'\n'} 
+            🥑 Fat: {dailyNutritionGoals?.fat_goal - dailyNutritionLogs?.fat_consumed}g left
           </Text>
           <Text style={styles.questionText}>
             Would you like to plan your lunch?

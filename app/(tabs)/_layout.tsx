@@ -1,4 +1,5 @@
 // _layout.tsx
+import React from 'react';
 import { router, Tabs } from 'expo-router';
 import { 
   View, 
@@ -18,12 +19,24 @@ import { useNutritionContext } from '../../services/nutritionContext';
 import { useState } from 'react';
 
 export default function ChatTabsLayout() {
-  const { dailyNutritionLogs, dailyNutritionGoals } = useNutritionContext();
-  console.log('dailyNutritionLogs', dailyNutritionLogs);
-  console.log('dailyNutritionGoals', dailyNutritionGoals);
-  const { sendMessage, isLoading } = useChatContext();
   const [inputText, setInputText] = useState('');
+  const { sendMessage, isLoading } = useChatContext();
   const listRef = useRef<FlatList>(null);
+  
+  // Memoize the header component to prevent re-renders
+  const Header = React.memo(() => {
+    const { dailyNutritionLogs, dailyNutritionGoals } = useNutritionContext();
+    return (
+      <View style={styles.header}>
+        <Text style={styles.title}>Snap Snack</Text>
+        <View style={styles.caloriesBadge}>
+          <Text style={styles.caloriesText}>
+            {dailyNutritionGoals?.calories_goal - dailyNutritionLogs?.calories_consumed} cals left
+          </Text>
+        </View>
+      </View>
+    );
+  });
   
   const handleSend = async () => {
     if (!inputText.trim()) return;
@@ -48,12 +61,7 @@ export default function ChatTabsLayout() {
         style={styles.keyboardView}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Snap Snack</Text>
-          <View style={styles.caloriesBadge}>
-            <Text style={styles.caloriesText}>{dailyNutritionGoals?.calories_goal - dailyNutritionLogs?.calories_consumed} cals left</Text>
-          </View>
-        </View>
+        <Header />
         <View style={styles.contentContainer}>
           <Tabs 
             screenOptions={{

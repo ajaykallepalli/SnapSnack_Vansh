@@ -14,7 +14,7 @@ export default function TrackScreen() {
     carbs: '',
     fat: '',
   });
-  const { dailyNutritionLogs, dailyNutritionGoals, remainingNutrition } = useNutritionContext();
+  const { dailyNutritionLogs, dailyNutritionGoals } = useNutritionContext();
 
   const handleAddMeal = (meal: 'breakfast' | 'lunch' | 'snack' | 'dinner') => {
     setSelectedMeal(meal);
@@ -52,32 +52,32 @@ export default function TrackScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Today's Progress</Text>
-            <Text style={styles.caloriesLeft}>{remainingNutrition.calories_goal - remainingNutrition.calories_consumed} cals left</Text>
+            <Text style={styles.caloriesLeft}>{dailyNutritionGoals?.calories_goal - dailyNutritionLogs?.calories_consumed} cals left</Text>
           </View>
 
           <View style={styles.progressSection}>
             <View style={styles.progressRow}>
               <Text style={styles.macroLabel}>Protein</Text>
               <View style={styles.progressBarContainer}>
-                <View style={[styles.progressBar, styles.proteinBar, { width: `${(remainingNutrition.protein_goal - remainingNutrition.protein_consumed) / remainingNutrition.protein_goal * 100}%` }]} />
+                <View style={[styles.progressBar, styles.proteinBar, { width: `${(dailyNutritionGoals?.protein_goal - dailyNutritionLogs?.protein_consumed) / dailyNutritionGoals?.protein_goal * 100}%` }]} />
               </View>
-              <Text style={styles.macroValue}>{remainingNutrition.protein_goal - remainingNutrition.protein_consumed}g left</Text>
+              <Text style={styles.macroValue}>{dailyNutritionGoals?.protein_goal - dailyNutritionLogs?.protein_consumed}g left</Text>
             </View>
 
             <View style={styles.progressRow}>
               <Text style={styles.macroLabel}>Carbs</Text>
               <View style={styles.progressBarContainer}>
-                <View style={[styles.progressBar, styles.carbsBar, { width: `${(remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed) / remainingNutrition.carbs_goal * 100}%` }]} />
+                <View style={[styles.progressBar, styles.carbsBar, { width: `${(dailyNutritionGoals?.carbs_goal - dailyNutritionLogs?.carbs_consumed) / dailyNutritionGoals?.carbs_goal * 100}%` }]} />
               </View>
-              <Text style={styles.macroValue}>{remainingNutrition.carbs_goal - remainingNutrition.carbs_consumed}g left</Text>
+              <Text style={styles.macroValue}>{dailyNutritionGoals?.carbs_goal - dailyNutritionLogs?.carbs_consumed}g left</Text>
             </View>
 
             <View style={styles.progressRow}>
               <Text style={styles.macroLabel}>Fat</Text>
               <View style={styles.progressBarContainer}>
-                <View style={[styles.progressBar, styles.fatBar, { width: `${(remainingNutrition.fat_goal - remainingNutrition.fat_consumed) / remainingNutrition.fat_goal * 100}%` }]} />
+                <View style={[styles.progressBar, styles.fatBar, { width: `${(dailyNutritionGoals?.fat_goal - dailyNutritionLogs?.fat_consumed) / dailyNutritionGoals?.fat_goal * 100}%` }]} />
               </View>
-              <Text style={styles.macroValue}>{remainingNutrition.fat_goal - remainingNutrition.fat_consumed}g left</Text>
+              <Text style={styles.macroValue}>{dailyNutritionGoals?.fat_goal - dailyNutritionLogs?.fat_consumed}g left</Text>
             </View>
           </View>
         </View>

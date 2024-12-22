@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, TextInput } from 'react-native';
 import React from 'react';
 import { useNutritionContext } from '../../../services/nutritionContext';
-import { DailyNutritionService } from '~/services/dailyNutritionService';
-import { NutritionTrackingService } from '~/services/nutritionTracking';
+import { DailyNutritionService } from '../../../services/dailyNutritionService';
+import { NutritionTrackingService } from '../../../services/nutritionTracking';
+import { MealCard } from '../../../components/MealCard';
+
 export default function TrackScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const [manualEntryVisible, setManualEntryVisible] = React.useState(false);
@@ -46,6 +48,46 @@ export default function TrackScreen() {
     setManualEntryVisible(false);
   };
 
+  const renderMealSection = (
+    mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack',
+    title: string,
+    icon: string
+  ) => {
+    const mealEntries = dailyNutritionLogs?.meals_data.filter(
+      meal => meal.meal_type === mealType
+    ) || [];
+
+    return (
+      <View key={mealType} style={styles.mealItem}>
+        <View style={styles.mealHeader}>
+          <Text style={styles.mealIcon}>{icon}</Text>
+          <View style={styles.mealInfo}>
+            <Text style={styles.mealTitle}>{title}</Text>
+            {mealEntries.length === 0 && <Text style={styles.mealStatus}>No meals logged</Text>}
+          </View>
+          <Pressable onPress={() => handleAddMeal(mealType)}>
+            <Text style={styles.addButton}>Add</Text>
+          </Pressable>
+        </View>
+        
+        {mealEntries.map((meal, index) => (
+          <MealCard
+            key={index}
+            foodName={meal.food_name}
+            calories={meal.calories}
+            protein={meal.protein_g}
+            carbs={meal.carbs_g}
+            fat={meal.fat_g}
+            time={new Date(meal.eaten_at).toLocaleTimeString([], { 
+              hour: 'numeric', 
+              minute: '2-digit'
+            })}
+          />
+        ))}
+      </View>
+    );
+  };
+
   return (
     <>
       <ScrollView style={styles.container}>
@@ -84,20 +126,10 @@ export default function TrackScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Today's Meals</Text>
           <View style={styles.mealList}>
-            {['breakfast', 'lunch', 'snack', 'dinner'].map((meal) => (
-              <View key={meal} style={styles.mealItem}>
-                <Text style={styles.mealIcon}>
-                  {meal === 'breakfast' ? '☕️' : meal === 'lunch' ? '🍽️' : meal === 'snack' ? '🍩' : '🌙'}
-                </Text>
-                <View style={styles.mealInfo}>
-                  <Text style={styles.mealTitle}>{meal.charAt(0).toUpperCase() + meal.slice(1)}</Text>
-                  <Text style={styles.mealStatus}>No meals logged</Text>
-                </View>
-                <Pressable onPress={() => handleAddMeal(meal as any)}>
-                  <Text style={styles.addButton}>Add</Text>
-                </Pressable>
-              </View>
-            ))}
+            {renderMealSection('breakfast', 'Breakfast', '☕️')}
+            {renderMealSection('lunch', 'Lunch', '🍽️')}
+            {renderMealSection('snack', 'Snack', '🍩')}
+            {renderMealSection('dinner', 'Dinner', '🌙')}
           </View>
         </View>
       </ScrollView>
@@ -269,9 +301,12 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   mealItem: {
+    marginBottom: 20,
+  },
+  mealHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    marginBottom: 12,
   },
   mealIcon: {
     fontSize: 24,

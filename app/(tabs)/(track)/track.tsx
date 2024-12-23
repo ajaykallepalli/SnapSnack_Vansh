@@ -103,10 +103,10 @@ export default function TrackScreen() {
             {/* TODO: Fix issues with date selection not displaying correct text*/}
             <Text style={styles.sectionTitle}>
               {isToday(new Date(selectedDate))
-                ? "Today's Progress"
+                ? "Today's Targets"
                 : new Date(selectedDate) > new Date()
-                ? "Future Progress" 
-                : "Previous Progress"}
+                ? "Future Targets" 
+                : "Previous Targets"}
             </Text>
             <Text style={styles.caloriesLeft}>{dailyNutritionGoals?.calories_goal - dailyNutritionLogs?.calories_consumed} cals left</Text>
           </View>

@@ -142,4 +142,13 @@ export class NutritionTrackingService {
     // Save updated log
     await this.updateDailyLog(this._currentLog!);
   }
+
+  static async updateMealImage(mealId: string, imageUrl: string) {
+    const { error } = await supabase
+      .from('food_entries')
+      .update({ image_url: imageUrl })
+      .eq('id', mealId);
+
+    if (error) throw error;
+  }
 }

@@ -19,6 +19,7 @@ export default function TrackScreen() {
     fat: '',
   });
   const { dailyNutritionLogs, dailyNutritionGoals, setSelectedDate, selectedDate } = useNutritionContext();
+  console.log('Daily Nutrition Logs:', dailyNutritionLogs);
 
   const handleAddMeal = (meal: 'breakfast' | 'lunch' | 'snack' | 'dinner') => {
     setSelectedMeal(meal);
@@ -43,6 +44,8 @@ export default function TrackScreen() {
       eaten_at: new Date().toISOString(),
       logged_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
+      image_url: null,
+      thumbnail_url: null
     };
     console.log('Meal to add:', meal);
     await NutritionTrackingService.addMealToDB(meal);
@@ -79,11 +82,19 @@ export default function TrackScreen() {
         {mealEntries.map((meal, index) => (
           <MealCard
             key={index}
+            foodId={meal.id}
             foodName={meal.food_name}
             calories={meal.calories}
             protein={meal.protein_g}
             carbs={meal.carbs_g}
             fat={meal.fat_g}
+            imageUrl={meal.image_url}
+            onImageUploaded={async (url) => {
+              // Update the meal in the database with the new image URL
+              await NutritionTrackingService.updateMealImage(meal.id, url);
+              // Refresh nutrition data to show updated image
+              refreshNutrition();
+            }}
             time={new Date(meal.eaten_at).toLocaleTimeString([], { 
               hour: 'numeric', 
               minute: '2-digit'

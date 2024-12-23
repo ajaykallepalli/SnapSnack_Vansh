@@ -35,7 +35,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({ onDateChange }) => {
     if (index !== -1) {
       const screenWidth = 48 * 5; // Approximate width showing ~5 days
       scrollViewRef.current?.scrollTo({
-        x: Math.max(0, (index * (48 + 8)) - screenWidth - (48 + 8)), // Show selected date second from right
+        x: Math.max(0, (index * (48 + 8)) - screenWidth - (48)), // Show selected date second from right
         animated: true
       });
     }

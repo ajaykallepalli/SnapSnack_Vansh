@@ -26,18 +26,20 @@ export interface DailyNutritionLogs {
   }
   
   export interface MealLog {
-    id?: string;
+    id: string;
     user_id: string;
-    meal_type: string;
     food_name: string;
     calories: number;
     protein_g: number;
     carbs_g: number;
     fat_g: number;
+    meal_type: string;
     eaten_at: string;
     message_id?: string;
     nutrition_data?: any;
     entry_source?: string;
+    image_url?: string;
+    thumbnail_url?: string;
     created_at?: string;
   }
 

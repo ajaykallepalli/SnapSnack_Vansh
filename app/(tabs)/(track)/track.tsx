@@ -57,6 +57,24 @@ export default function TrackScreen() {
     setSelectedDate(date.toISOString().split('T')[0]);
   };
 
+  const refreshNutrition = async () => {
+    if (!dailyNutritionLogs?.user_id) return;
+    
+    const updatedLog = await NutritionTrackingService.getDailyLog(
+      dailyNutritionLogs.user_id, 
+      selectedDate
+    );
+    
+    if (updatedLog) {
+      console.log('Updated log:', updatedLog);
+    }
+  };
+
+  const handleImageUploaded = async (mealId: string, paths: { fullPath: string, thumbPath: string }) => {
+    await NutritionTrackingService.updateMealImage(mealId, paths.fullPath, paths.thumbPath);
+    await refreshNutrition();
+  };
+
   const renderMealSection = (
     mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack',
     title: string,
@@ -82,21 +100,15 @@ export default function TrackScreen() {
         {mealEntries.map((meal) => (
           <MealCard
             key={`${mealType}-${meal.id || meal.created_at || Date.now()}`}
-            foodId={meal.id || `${mealType}-${meal.created_at || Date.now()}`}
+            foodId={meal.id}
             foodName={meal.food_name}
             calories={meal.calories}
             protein={meal.protein_g}
             carbs={meal.carbs_g}
             fat={meal.fat_g}
             imageUrl={meal.image_url}
-            onImageUploaded={async (url) => {
-              if (!meal.id) {
-                console.error('No meal ID available');
-                return;
-              }
-              await NutritionTrackingService.updateMealImage(meal.id, url);
-              refreshNutrition();
-            }}
+            thumbnailUrl={meal.thumbnail_url}
+            onImageUploaded={(paths) => handleImageUploaded(meal.id, paths)}
             time={new Date(meal.eaten_at).toLocaleTimeString([], { 
               hour: 'numeric', 
               minute: '2-digit'

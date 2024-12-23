@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { supabase } from '../utils/supabase';
+import { useImageUpload } from '../hooks/useImageUpload';
 
 interface MealCardProps {
   foodName: string;
@@ -11,23 +10,53 @@ interface MealCardProps {
   fat: number;
   time?: string;
   imageUrl?: string;
+  thumbnailUrl?: string;
   foodId: string;
-  onImageUploaded?: (url: string) => void;
+  onImageUploaded?: (urls: { fullPath: string, thumbPath: string }) => void;
 }
 
-export const MealCard = ({ foodName, calories, protein, carbs, fat, time, imageUrl, foodId, onImageUploaded }: MealCardProps) => {
-  const handleImageUpload = async () => {
+export const MealCard = ({ 
+  foodName, 
+  calories, 
+  protein, 
+  carbs, 
+  fat, 
+  time, 
+  imageUrl, 
+  thumbnailUrl,
+  foodId, 
+  onImageUploaded 
+}: MealCardProps) => {
+  const { launchCamera, launchLibrary, uploadImage } = useImageUpload();
+
+  const handleImageUpload = () => {
     Alert.alert(
       "Add Photo",
       "Choose a photo source",
       [
         {
           text: "Camera",
-          onPress: () => launchCamera()
+          onPress: async () => {
+            const uri = await launchCamera();
+            if (uri) {
+              const paths = await uploadImage(uri, foodId);
+              if (paths && onImageUploaded) {
+                onImageUploaded(paths);
+              }
+            }
+          }
         },
         {
           text: "Photo Library",
-          onPress: () => launchLibrary()
+          onPress: async () => {
+            const uri = await launchLibrary();
+            if (uri) {
+              const paths = await uploadImage(uri, foodId);
+              if (paths && onImageUploaded) {
+                onImageUploaded(paths);
+              }
+            }
+          }
         },
         {
           text: "Cancel",
@@ -37,122 +66,10 @@ export const MealCard = ({ foodName, calories, protein, carbs, fat, time, imageU
     );
   };
 
-  const launchCamera = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Sorry, we need camera permissions to take photos.');
-      return;
-    }
-
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets.length > 0) {
-        console.log('Camera result:', result.assets[0]);
-        await uploadImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Camera error:', error);
-      Alert.alert('Error', 'Failed to take photo');
-    }
-  };
-
-  const launchLibrary = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Sorry, we need camera roll permissions to upload images.');
-      return;
-    }
-
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-
-      if (!result.canceled && result.assets.length > 0) {
-        console.log('Library result:', result.assets[0]);
-        await uploadImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Library error:', error);
-      Alert.alert('Error', 'Failed to select photo');
-    }
-  };
-
-  const uploadImage = async (uri: string) => {
-    if (!foodId) {
-      console.error('No foodId provided for meal:', foodName);
-      Alert.alert('Error', 'Missing meal identifier');
-      return;
-    }
-
-    const file = {
-      uri,
-      name: `meals/${foodId}-${Date.now()}.jpg`,
-      type: 'image/jpeg',
-    };
-
-    try {
-      console.log('Starting image upload for meal:', foodId);
-      const response = await fetch(file.uri);
-      console.log('Fetch response:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const blob = await response.blob();
-      console.log('Blob created, size:', blob.size);
-      
-      try {
-        const { data, error } = await supabase.storage
-          .from('food-images')
-          .upload(file.name, blob, {
-            contentType: 'image/jpeg',
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if (error) {
-          console.error('Supabase upload error:', error);
-          throw error;
-        }
-
-        console.log('Upload successful:', data);
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('food-images')
-          .getPublicUrl(file.name);
-
-        console.log('Public URL:', publicUrl);
-        if (onImageUploaded) {
-          await onImageUploaded(publicUrl);
-        }
-      } catch (error: any) {
-        console.error('Supabase storage error:', error);
-        throw new Error(`Failed to upload to Supabase: ${error.message}`);
-      }
-    } catch (error) {
-      console.error('Detailed upload error:', error);
-      Alert.alert(
-        'Upload Failed',
-        'Failed to upload image. Please try again later.'
-      );
-    }
-  };
-
   return (
     <View style={styles.card}>
-      {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.image} />
+      {(thumbnailUrl || imageUrl) ? (
+        <Image source={{ uri: thumbnailUrl || imageUrl }} style={styles.image} />
       ) : (
         <TouchableOpacity onPress={handleImageUpload} style={styles.uploadButton}>
           <Ionicons name="add" size={24} color="#666" />

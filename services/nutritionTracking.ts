@@ -148,12 +148,33 @@ export class NutritionTrackingService {
     await this.updateDailyLog(this._currentLog!);
   }
 
-  static async updateMealImage(mealId: string, imageUrl: string) {
+  static async updateMealImage(mealId: string, imageUrl: string, thumbnailUrl: string) {
+    const { data: { publicUrl: fullUrl } } = supabase.storage
+      .from('food-images')
+      .getPublicUrl(imageUrl);
+    
+    const { data: { publicUrl: thumbUrl } } = supabase.storage
+      .from('food-images')
+      .getPublicUrl(thumbnailUrl);
+
     const { error } = await supabase
       .from('food_entries')
-      .update({ image_url: imageUrl })
+      .update({ 
+        image_url: fullUrl,
+        thumbnail_url: thumbUrl 
+      })
       .eq('id', mealId);
 
     if (error) throw error;
+
+    // Update the meal in the current log
+    if (this._currentLog) {
+      const mealIndex = this._currentLog.meals_data.findIndex(m => m.id === mealId);
+      if (mealIndex !== -1) {
+        this._currentLog.meals_data[mealIndex].image_url = fullUrl;
+        this._currentLog.meals_data[mealIndex].thumbnail_url = thumbUrl;
+        await this.updateDailyLog(this._currentLog);
+      }
+    }
   }
 }

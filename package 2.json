@@ -48,8 +48,7 @@
     "react-native-size-matters": "^0.4.2",
     "react-native-svg": "15.8.0",
     "react-native-web": "~0.19.10",
-    "tamagui": "1.74.8",
-    "expo-image-manipulator": "~13.0.5"
+    "tamagui": "1.74.8"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

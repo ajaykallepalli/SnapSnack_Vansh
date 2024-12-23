@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChatProvider } from '../services/chatContext';
 import { NutritionGoalsService } from '../services/weightTracking';
 import { NutritionProvider } from '../services/nutritionContext';
+
 const IndexPage = () => {
   useEffect(() => {
     const checkUserAndData = async () => {

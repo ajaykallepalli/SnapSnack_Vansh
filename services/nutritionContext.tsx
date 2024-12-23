@@ -11,6 +11,7 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
   const [dailyNutritionLogs, setDailyNutritionLogs] = useState<DailyNutritionLogs | null>(null);
   const [dailyNutritionGoals, setDailyNutritionGoals] = useState<DailyNutritionGoals | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const remainingNutrition = {
     calories: (dailyNutritionGoals?.calories_goal ?? 0) - (dailyNutritionLogs?.calories_consumed ?? 0),
@@ -19,7 +20,7 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
     fat: (dailyNutritionGoals?.fat_goal ?? 0) - (dailyNutritionLogs?.fat_consumed ?? 0),
   };
 
-  const loadTodayNutrition = async () => {
+  const loadNutritionForDate = async (date: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -28,22 +29,17 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const today = new Date().toISOString().split('T')[0];
-
-      let goals = await NutritionTrackingService.getDailyGoals(session.user.id, today);
-
+      let goals = await NutritionTrackingService.getDailyGoals(session.user.id, date);
       if (!goals) {
         goals = await DailyNutritionService.ensureUpcomingGoals(session.user.id);
       }
-
       setDailyNutritionGoals(goals);
 
-      let log = await NutritionTrackingService.getDailyLog(session.user.id, today);
-      
+      let log = await NutritionTrackingService.getDailyLog(session.user.id, date);
       if (!log) {
         log = {
           user_id: session.user.id,
-          log_date: today,
+          log_date: date,
           calories_consumed: 0,
           protein_consumed: 0,
           carbs_consumed: 0,
@@ -55,7 +51,6 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
         };
         await NutritionTrackingService.updateDailyLog(log);
       }
-      
       setDailyNutritionLogs(log);
     } catch (error) {
       console.error('Error loading nutrition:', error);
@@ -66,21 +61,10 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Subscribe to NutritionTrackingService updates
+  // Watch for date changes
   useEffect(() => {
-    return NutritionTrackingService.subscribe((log) => {
-      if (log) {
-        setDailyNutritionLogs(log);
-        // Also refresh goals since they might have changed
-        const today = new Date().toISOString().split('T')[0];
-        NutritionTrackingService.getDailyGoals(log.user_id, today)
-          .then(goals => {
-            if (goals) setDailyNutritionGoals(goals);
-          })
-          .catch(console.error);
-      }
-    });
-  }, []);
+    loadNutritionForDate(selectedDate);
+  }, [selectedDate]);
 
   const updateDailyNutrition = async (meal: MealLog) => {
     try {
@@ -92,30 +76,15 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Initial load and midnight refresh
-  useEffect(() => {
-    loadTodayNutrition();
-    
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    
-    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
-    const timeout = setTimeout(() => {
-      loadTodayNutrition();
-    }, timeUntilMidnight);
-
-    return () => clearTimeout(timeout);
-  }, []);
-
   const contextValue: NutritionContextType = {
     dailyNutritionLogs,
     dailyNutritionGoals,
     remainingNutrition,
+    selectedDate,
+    setSelectedDate,
     updateDailyNutrition,
     isLoading,
-    refreshNutrition: loadTodayNutrition
+    refreshNutrition: () => loadNutritionForDate(selectedDate)
   };
 
   return (

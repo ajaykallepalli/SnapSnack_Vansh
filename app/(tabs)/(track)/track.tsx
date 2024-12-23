@@ -17,7 +17,7 @@ export default function TrackScreen() {
     carbs: '',
     fat: '',
   });
-  const { dailyNutritionLogs, dailyNutritionGoals } = useNutritionContext();
+  const { dailyNutritionLogs, dailyNutritionGoals, setSelectedDate } = useNutritionContext();
 
   const handleAddMeal = (meal: 'breakfast' | 'lunch' | 'snack' | 'dinner') => {
     setSelectedMeal(meal);
@@ -50,7 +50,7 @@ export default function TrackScreen() {
   };
 
   const handleDateChange = (date: Date) => {
-    console.log('Selected date:', date);
+    setSelectedDate(date.toISOString().split('T')[0]);
   };
 
   const renderMealSection = (

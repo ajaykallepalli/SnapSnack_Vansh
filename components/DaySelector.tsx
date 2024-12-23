@@ -22,7 +22,7 @@ const DaySelector = React.forwardRef<{ scrollToDate: (date: Date) => void }, Day
     const date = addDays(startOfToday(), i - 27);
     return {
       date,
-      dayName: format(date, 'EEE'),
+      dayName: format(date, 'EEEEEE'),
       dayNumber: format(date, 'd'),
       isToday: i === 27
     };
@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
   },
   dayName: {
     fontSize: 12,
-    textTransform: 'uppercase',
     marginBottom: 4,
+    textAlign: 'center',
   },
   dayNumber: {
     fontSize: 18,

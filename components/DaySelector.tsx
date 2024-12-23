@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { format, addDays, startOfToday } from 'date-fns';
 
@@ -14,6 +14,7 @@ interface DaySelectorProps {
 }
 
 const DaySelector: React.FC<DaySelectorProps> = ({ onDateChange }) => {
+  const scrollViewRef = useRef<ScrollView>(null);
   const [selectedDay, setSelectedDay] = useState<Date>(startOfToday());
   
   const days: DayInfo[] = Array.from({ length: 29 }, (_, i) => {
@@ -26,6 +27,20 @@ const DaySelector: React.FC<DaySelectorProps> = ({ onDateChange }) => {
     };
   });
 
+  // Scroll to selected date when tab is focused
+  useEffect(() => {
+    const index = days.findIndex(day => 
+      day.date.getTime() === selectedDay.getTime()
+    );
+    if (index !== -1) {
+      const screenWidth = 48 * 5; // Approximate width showing ~5 days
+      scrollViewRef.current?.scrollTo({
+        x: Math.max(0, (index * (48 + 8)) - screenWidth - (48 + 8)), // Show selected date second from right
+        animated: true
+      });
+    }
+  }, [selectedDay]);
+
   const handleDayClick = (date: Date): void => {
     setSelectedDay(date);
     onDateChange?.(date);
@@ -34,6 +49,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({ onDateChange }) => {
   return (
     <View style={styles.container}>
       <ScrollView 
+        ref={scrollViewRef}
         horizontal 
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.daysContainer}

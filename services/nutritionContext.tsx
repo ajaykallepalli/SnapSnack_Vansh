@@ -84,7 +84,8 @@ export function NutritionProvider({ children }: { children: React.ReactNode }) {
     setSelectedDate,
     updateDailyNutrition,
     isLoading,
-    refreshNutrition: () => loadNutritionForDate(selectedDate)
+    refreshNutrition: () => loadNutritionForDate(selectedDate),
+    setDailyNutritionLogs: (logs: DailyNutritionLogs | null) => setDailyNutritionLogs(logs)
   };
 
   return (

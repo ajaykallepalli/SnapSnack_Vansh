@@ -2,7 +2,8 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { Alert, Platform } from 'react-native';
+import React from 'react';
+import { Platform, Alert } from 'react-native';
 import { supabase } from '../utils/supabase';
 
 
@@ -16,7 +17,7 @@ export const useImageUpload = () => {
       }
 
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: 'images',
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -41,7 +42,7 @@ export const useImageUpload = () => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: 'images',
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -89,76 +90,73 @@ export const useImageUpload = () => {
   };
 
   const uploadImage = async (pickedUri: string, foodId: string) => {
+    console.log('uploadImage called with:', { pickedUri, foodId });
+
     if (!pickedUri || !foodId) {
       console.log('Missing URI or foodId:', { pickedUri, foodId });
       return null;
     }
 
     try {
+      console.log('Fetching user data...');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
+      console.log('User found:', user.id);
 
       const basePath = `${user.id}/${foodId}`;
       const timestamp = Date.now();
 
-      // Process images
+      console.log('Compressing images...');
       const fullImage = await compressImage(pickedUri, {
         maxWidth: 1200,
         maxHeight: 1200,
-        quality: 0.8
+        quality: 0.8,
       });
-      
       const thumbnail = await compressImage(pickedUri, {
         maxWidth: 300,
         maxHeight: 300,
-        quality: 0.6
+        quality: 0.6,
       });
 
+      console.log('Reading base64...');
       const [fullImageBase64, thumbnailBase64] = await Promise.all([
         FileSystem.readAsStringAsync(fullImage, { encoding: FileSystem.EncodingType.Base64 }),
-        FileSystem.readAsStringAsync(thumbnail, { encoding: FileSystem.EncodingType.Base64 })
+        FileSystem.readAsStringAsync(thumbnail, { encoding: FileSystem.EncodingType.Base64 }),
       ]);
 
       const fullPath = `${basePath}/full-${timestamp}.jpg`;
       const thumbPath = `${basePath}/thumb-${timestamp}.jpg`;
+      console.log('Uploading to “food-images” bucket:', { fullPath, thumbPath });
 
-      // Upload both images
       await Promise.all([
-        supabase.storage
-          .from('food-images')
-          .upload(fullPath, decode(fullImageBase64), {
-            contentType: 'image/jpeg',
-            cacheControl: '3600',
-            upsert: true
-          }),
-        supabase.storage
-          .from('food-images')
-          .upload(thumbPath, decode(thumbnailBase64), {
-            contentType: 'image/jpeg',
-            cacheControl: '3600',
-            upsert: true
-          })
+        supabase.storage.from('food-images').upload(fullPath, decode(fullImageBase64), {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+          upsert: true,
+        }),
+        supabase.storage.from('food-images').upload(thumbPath, decode(thumbnailBase64), {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+          upsert: true,
+        }),
       ]);
 
-      // Get public URLs
-      const { data: { publicUrl: fullUrl } } = supabase.storage
-        .from('food-images')
-        .getPublicUrl(fullPath);
-        
-      const { data: { publicUrl: thumbUrl } } = supabase.storage
-        .from('food-images')
-        .getPublicUrl(thumbPath);
+      console.log('Retrieving public URLs...');
+      const { data: { publicUrl: fullUrl } } = supabase
+        .storage.from('food-images').getPublicUrl(fullPath);
+      const { data: { publicUrl: thumbUrl } } = supabase
+        .storage.from('food-images').getPublicUrl(thumbPath);
+      console.log('URLs:', { fullUrl, thumbUrl });
 
-      // Update food entry with public URLs
+      console.log('Updating DB “food_entries”...');
       const { error: updateError } = await supabase
         .from('food_entries')
-        .update({ 
+        .update({
           image_url: fullUrl,
           thumbnail_url: thumbUrl,
           user_id: user.id
         })
         .eq('id', foodId);
-
       if (updateError) throw updateError;
 
       console.log('Successfully uploaded images and updated entry');

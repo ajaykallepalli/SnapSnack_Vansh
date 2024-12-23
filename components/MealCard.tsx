@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useImageUpload } from '../hooks/useImageUpload';
+import { Alert } from 'react-native';
 
 interface MealCardProps {
   foodName: string;
@@ -12,7 +13,7 @@ interface MealCardProps {
   imageUrl?: string;
   thumbnailUrl?: string;
   foodId: string;
-  onImageUploaded?: (urls: { fullPath: string, thumbPath: string }) => void;
+  onImageUploaded?: (urls: { fullUrl: string, thumbUrl: string }) => void;
 }
 
 export const MealCard = ({ 
@@ -39,9 +40,9 @@ export const MealCard = ({
           onPress: async () => {
             const uri = await launchCamera();
             if (uri) {
-              const paths = await uploadImage(uri, foodId);
-              if (paths && onImageUploaded) {
-                onImageUploaded(paths);
+              const urls = await uploadImage(uri, foodId);
+              if (urls && onImageUploaded) {
+                onImageUploaded(urls);
               }
             }
           }
@@ -51,9 +52,9 @@ export const MealCard = ({
           onPress: async () => {
             const uri = await launchLibrary();
             if (uri) {
-              const paths = await uploadImage(uri, foodId);
-              if (paths && onImageUploaded) {
-                onImageUploaded(paths);
+              const urls = await uploadImage(uri, foodId);
+              if (urls && onImageUploaded) {
+                onImageUploaded(urls);
               }
             }
           }
@@ -66,15 +67,29 @@ export const MealCard = ({
     );
   };
 
+  console.log('Image Debug:', {
+    thumbnailUrl,
+    imageUrl,
+    usingUrl: thumbnailUrl || imageUrl,
+  });
+
   return (
     <View style={styles.card}>
-      {(thumbnailUrl || imageUrl) ? (
-        <Image source={{ uri: thumbnailUrl || imageUrl }} style={styles.image} />
-      ) : (
-        <TouchableOpacity onPress={handleImageUpload} style={styles.uploadButton}>
-          <Ionicons name="add" size={24} color="#666" />
-        </TouchableOpacity>
-      )}
+      <View style={styles.imageContainer}>
+        {(thumbnailUrl || imageUrl) ? (
+          <Image 
+            source={{ uri: thumbnailUrl || imageUrl }} 
+            style={styles.image}
+            resizeMode="cover"
+            onError={() => console.log('Image failed to load:', thumbnailUrl || imageUrl)}
+            defaultSource={require('../assets/placeholder-meal.png')}
+          />
+        ) : (
+          <TouchableOpacity onPress={handleImageUpload} style={styles.uploadButton}>
+            <Ionicons name="camera" size={24} color="#666" />
+          </TouchableOpacity>
+        )}
+      </View>
       <View style={styles.content}>
         <View style={styles.cardHeader}>
           <Text style={styles.foodName}>{foodName}</Text>
@@ -93,64 +108,65 @@ export const MealCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'white',
+    flexDirection: 'row',
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 12,
-    marginVertical: 8,
-    marginHorizontal: 16,
+    marginBottom: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    flexDirection: 'row',
-    alignItems: 'center',
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  imageContainer: {
+    width: 80,
+    height: 80,
+    marginRight: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#f5f5f5',
   },
   image: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
+    width: '100%',
+    height: '100%',
   },
   uploadButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    backgroundColor: '#f5f5f5',
   },
   content: {
     flex: 1,
+    justifyContent: 'space-between',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   foodName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
   },
   calories: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
     color: '#666',
   },
   macros: {
     flexDirection: 'row',
+    gap: 8,
     alignItems: 'center',
-    gap: 12,
   },
   macro: {
     fontSize: 14,
     color: '#666',
   },
   time: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#999',
     marginLeft: 'auto',
   },

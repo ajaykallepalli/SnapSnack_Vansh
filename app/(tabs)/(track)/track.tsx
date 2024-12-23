@@ -18,7 +18,7 @@ export default function TrackScreen() {
     carbs: '',
     fat: '',
   });
-  const { dailyNutritionLogs, dailyNutritionGoals, setSelectedDate, selectedDate } = useNutritionContext();
+  const { dailyNutritionLogs, dailyNutritionGoals, setSelectedDate, selectedDate, setDailyNutritionLogs } = useNutritionContext();
   console.log('Daily Nutrition Logs:', dailyNutritionLogs);
 
   const handleAddMeal = (meal: 'breakfast' | 'lunch' | 'snack' | 'dinner') => {
@@ -70,9 +70,22 @@ export default function TrackScreen() {
     }
   };
 
-  const handleImageUploaded = async (mealId: string, paths: { fullPath: string, thumbPath: string }) => {
-    await NutritionTrackingService.updateMealImage(mealId, paths.fullPath, paths.thumbPath);
-    await refreshNutrition();
+  const handleImageUploaded = async (mealId: string, urls: { fullUrl: string, thumbUrl: string }) => {
+    try {
+      await NutritionTrackingService.updateMealImage(mealId, urls.fullUrl, urls.thumbUrl);
+      
+      if (dailyNutritionLogs?.user_id) {
+        const updatedLog = await NutritionTrackingService.getDailyLog(
+          dailyNutritionLogs.user_id,
+          selectedDate
+        );
+        if (updatedLog) {
+          setDailyNutritionLogs(updatedLog);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update meal image:', error);
+    }
   };
 
   const renderMealSection = (

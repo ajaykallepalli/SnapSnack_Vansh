@@ -85,7 +85,7 @@ export class NutritionTrackingService {
 
   static async addMealToDB(meal: MealLog) {
     // First save to food_entries
-    const { error: foodEntryError } = await supabase
+    const { data: newEntry, error: foodEntryError } = await supabase
       .from('food_entries')
       .insert({
         user_id: meal.user_id,
@@ -100,9 +100,14 @@ export class NutritionTrackingService {
         fat_g: meal.fat_g,
         meal_type: meal.meal_type,
         created_at: new Date().toISOString()
-      });
+      })
+      .select()
+      .single();
 
     if (foodEntryError) throw foodEntryError;
+
+    // Add the ID to the meal object
+    const mealWithId = { ...meal, id: newEntry.id };
 
     // Get or create daily log
     if (!this._currentLog) {
@@ -132,12 +137,12 @@ export class NutritionTrackingService {
         };
       }
     }
-    // Update totals and meals array
-    this._currentLog!.calories_consumed += meal.calories;
-    this._currentLog!.protein_consumed += meal.protein_g;
-    this._currentLog!.carbs_consumed += meal.carbs_g;
-    this._currentLog!.fat_consumed += meal.fat_g;
-    this._currentLog!.meals_data.push(meal);
+    // Update totals and meals array with the meal that includes ID
+    this._currentLog!.calories_consumed += mealWithId.calories;
+    this._currentLog!.protein_consumed += mealWithId.protein_g;
+    this._currentLog!.carbs_consumed += mealWithId.carbs_g;
+    this._currentLog!.fat_consumed += mealWithId.fat_g;
+    this._currentLog!.meals_data.push(mealWithId);
     
     // Save updated log
     await this.updateDailyLog(this._currentLog!);

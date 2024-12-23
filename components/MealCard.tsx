@@ -44,15 +44,21 @@ export const MealCard = ({ foodName, calories, protein, carbs, fat, time, imageU
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets.length > 0) {
-      await uploadImage(result.assets[0].uri);
+      if (!result.canceled && result.assets.length > 0) {
+        console.log('Camera result:', result.assets[0]);
+        await uploadImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Camera error:', error);
+      Alert.alert('Error', 'Failed to take photo');
     }
   };
 
@@ -63,21 +69,27 @@ export const MealCard = ({ foodName, calories, protein, carbs, fat, time, imageU
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-    if (!result.canceled && result.assets.length > 0) {
-      await uploadImage(result.assets[0].uri);
+      if (!result.canceled && result.assets.length > 0) {
+        console.log('Library result:', result.assets[0]);
+        await uploadImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Library error:', error);
+      Alert.alert('Error', 'Failed to select photo');
     }
   };
 
   const uploadImage = async (uri: string) => {
     if (!foodId) {
-      console.error('No foodId provided');
+      console.error('No foodId provided for meal:', foodName);
       Alert.alert('Error', 'Missing meal identifier');
       return;
     }
@@ -89,7 +101,7 @@ export const MealCard = ({ foodName, calories, protein, carbs, fat, time, imageU
     };
 
     try {
-      console.log('Starting image upload...', file);
+      console.log('Starting image upload for meal:', foodId);
       const response = await fetch(file.uri);
       console.log('Fetch response:', response.status);
       
@@ -124,15 +136,15 @@ export const MealCard = ({ foodName, calories, protein, carbs, fat, time, imageU
         if (onImageUploaded) {
           await onImageUploaded(publicUrl);
         }
-      } catch (uploadError) {
-        console.error('Supabase error:', uploadError);
-        throw uploadError;
+      } catch (error: any) {
+        console.error('Supabase storage error:', error);
+        throw new Error(`Failed to upload to Supabase: ${error.message}`);
       }
     } catch (error) {
       console.error('Detailed upload error:', error);
       Alert.alert(
         'Upload Failed',
-        'Failed to upload image. Please try again.'
+        'Failed to upload image. Please try again later.'
       );
     }
   };

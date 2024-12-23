@@ -81,7 +81,7 @@ export default function TrackScreen() {
         
         {mealEntries.map((meal, index) => (
           <MealCard
-            key={index}
+            key={meal.id}
             foodId={meal.id}
             foodName={meal.food_name}
             calories={meal.calories}
@@ -90,9 +90,11 @@ export default function TrackScreen() {
             fat={meal.fat_g}
             imageUrl={meal.image_url}
             onImageUploaded={async (url) => {
-              // Update the meal in the database with the new image URL
+              if (!meal.id) {
+                console.error('No meal ID available');
+                return;
+              }
               await NutritionTrackingService.updateMealImage(meal.id, url);
-              // Refresh nutrition data to show updated image
               refreshNutrition();
             }}
             time={new Date(meal.eaten_at).toLocaleTimeString([], { 

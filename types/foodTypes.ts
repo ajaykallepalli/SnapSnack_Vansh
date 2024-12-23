@@ -44,6 +44,7 @@ export interface DailyNutritionLogs {
 export interface NutritionContextType {
   dailyNutritionLogs: DailyNutritionLogs | null;
   dailyNutritionGoals: DailyNutritionGoals | null;
+  selectedDate: string;
   setSelectedDate: (date: string) => void;
   remainingNutrition: {
     calories: number;

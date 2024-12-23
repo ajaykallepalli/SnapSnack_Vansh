@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 
 import React, { useEffect, useRef } from 'react';
 import { useChatContext } from '../../../services/chatContext';
 import { useNutritionContext } from '../../../services/nutritionContext';
+import Markdown from 'react-native-markdown-display';
 
 export default function ChatScreen() {
   const { messages } = useChatContext();
@@ -66,16 +67,19 @@ export default function ChatScreen() {
                 msg.role === 'user' ? styles.userMessage : styles.aiMessage
               ]}
             >
-              <Text style={[
-                styles.messageText,
-                msg.role === 'user' && styles.userMessageText
-              ]}>
+              {msg.role === 'user' ? (
+                <Text style={[styles.messageText, styles.userMessageText]}>
                   {msg.content}
-              </Text>
+                </Text>
+              ) : (
+                <Markdown style={markdownStyles}>
+                  {msg.content}
+                </Markdown>
+              )}
             </View>
           );
         })}
-        <View style={{ height: 25 }} />
+        <View style={{ height: 50 }} />
       </ScrollView>
     </View>
     
@@ -136,3 +140,15 @@ const styles = StyleSheet.create({
     color: '#fff',
   }
 }); 
+
+const markdownStyles = {
+  body: {
+    color: '#000',
+  },
+  code_block: {
+    backgroundColor: '#f6f8fa',
+    padding: 8,
+    borderRadius: 4,
+  },
+  // Add more markdown styles as needed
+}; 

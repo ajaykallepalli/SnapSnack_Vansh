@@ -5,6 +5,7 @@ import { DailyNutritionService } from '../../../services/dailyNutritionService';
 import { NutritionTrackingService } from '../../../services/nutritionTracking';
 import { MealCard } from '../../../components/MealCard';
 import DaySelector from '../../../components/DaySelector';
+import { format, isToday } from 'date-fns';
 
 export default function TrackScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
@@ -17,7 +18,7 @@ export default function TrackScreen() {
     carbs: '',
     fat: '',
   });
-  const { dailyNutritionLogs, dailyNutritionGoals, setSelectedDate } = useNutritionContext();
+  const { dailyNutritionLogs, dailyNutritionGoals, setSelectedDate, selectedDate } = useNutritionContext();
 
   const handleAddMeal = (meal: 'breakfast' | 'lunch' | 'snack' | 'dinner') => {
     setSelectedMeal(meal);
@@ -99,7 +100,14 @@ export default function TrackScreen() {
       <ScrollView style={styles.container}>
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Progress</Text>
+            {/* TODO: Fix issues with date selection not displaying correct text*/}
+            <Text style={styles.sectionTitle}>
+              {isToday(new Date(selectedDate))
+                ? "Today's Progress"
+                : new Date(selectedDate) > new Date()
+                ? "Future Progress" 
+                : "Previous Progress"}
+            </Text>
             <Text style={styles.caloriesLeft}>{dailyNutritionGoals?.calories_goal - dailyNutritionLogs?.calories_consumed} cals left</Text>
           </View>
 
@@ -130,7 +138,13 @@ export default function TrackScreen() {
           </View>
         </View>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Today's Meals</Text>
+          <Text style={styles.sectionTitle}>
+            {isToday(new Date(selectedDate))
+              ? "Today's Meals"
+              : new Date(selectedDate) > new Date()
+              ? "Future Meals" 
+              : "Previous Meals"}
+          </Text>
           <View style={styles.mealList}>
             {renderMealSection('breakfast', 'Breakfast', '☕️')}
             {renderMealSection('lunch', 'Lunch', '🍽️')}

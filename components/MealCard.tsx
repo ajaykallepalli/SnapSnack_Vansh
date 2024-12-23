@@ -14,6 +14,7 @@ interface MealCardProps {
   thumbnailUrl?: string;
   foodId: string;
   onImageUploaded?: (urls: { fullUrl: string, thumbUrl: string }) => void;
+  onDeleteMeal?: () => void;
 }
 
 export const MealCard = ({ 
@@ -26,7 +27,8 @@ export const MealCard = ({
   imageUrl, 
   thumbnailUrl,
   foodId, 
-  onImageUploaded 
+  onImageUploaded,
+  onDeleteMeal
 }: MealCardProps) => {
   const { launchCamera, launchLibrary, uploadImage } = useImageUpload();
 
@@ -67,6 +69,17 @@ export const MealCard = ({
     );
   };
 
+  const confirmDelete = () => {
+    Alert.alert(
+      'Delete Meal',
+      'Are you sure you want to delete this meal?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: onDeleteMeal }
+      ]
+    );
+  };
+
   console.log('Image Debug:', {
     thumbnailUrl,
     imageUrl,
@@ -102,6 +115,9 @@ export const MealCard = ({
           {time && <Text style={styles.time}>{time}</Text>}
         </View>
       </View>
+      <TouchableOpacity onPress={confirmDelete} style={styles.deleteButton}>
+        <Ionicons name="trash" size={24} color="#cc0000" />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -169,5 +185,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     marginLeft: 'auto',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
   },
 }); 

@@ -170,4 +170,43 @@ export class NutritionTrackingService {
       }
     }
   }
+
+  static async deleteMealFromDB(mealId: string) {
+    // 1. Get meal from "food_entries"
+    const { data: mealToDelete, error: mealError } = await supabase
+      .from('food_entries')
+      .select('id, user_id, calories, protein_g, carbs_g, fat_g')
+      .eq('id', mealId)
+      .single();
+    if (mealError) throw mealError;
+    if (!mealToDelete) {
+      console.log('Meal not found in DB.');
+      return;
+    }
+
+    // 2. Delete meal from "food_entries"
+    const { error: deletionError } = await supabase
+      .from('food_entries')
+      .delete()
+      .eq('id', mealId);
+    if (deletionError) throw deletionError;
+    console.log('Meal deleted from DB:', mealId);
+
+    // 3. Update current daily log
+    if (this._currentLog?.user_id !== mealToDelete.user_id) return;
+    const mealIndex = this._currentLog.meals_data.findIndex(m => m.id === mealId);
+    if (mealIndex !== -1) {
+      // Subtract macros
+      this._currentLog.calories_consumed -= mealToDelete.calories;
+      this._currentLog.protein_consumed -= mealToDelete.protein_g;
+      this._currentLog.carbs_consumed -= mealToDelete.carbs_g;
+      this._currentLog.fat_consumed -= mealToDelete.fat_g;
+
+      // Remove meal from the array
+      this._currentLog.meals_data.splice(mealIndex, 1);
+      // Save the updated daily log
+      await this.updateDailyLog(this._currentLog);
+      console.log('Meal removed from current log:', mealId);
+    }
+  }
 }

@@ -88,6 +88,21 @@ export default function TrackScreen() {
     }
   };
 
+  const handleDeleteMeal = async (mealId: string) => {
+    try {
+      await NutritionTrackingService.deleteMealFromDB(mealId);
+      if (dailyNutritionLogs?.user_id) {
+        const updatedLog = await NutritionTrackingService.getDailyLog(
+          dailyNutritionLogs.user_id,
+          selectedDate
+        );
+        if (updatedLog) setDailyNutritionLogs(updatedLog);
+      }
+    } catch (error) {
+      console.error('Error deleting meal:', error);
+    }
+  };
+
   const renderMealSection = (
     mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack',
     title: string,
@@ -126,6 +141,7 @@ export default function TrackScreen() {
               hour: 'numeric', 
               minute: '2-digit'
             })}
+            onDeleteMeal={() => handleDeleteMeal(meal.id)}
           />
         ))}
       </View>

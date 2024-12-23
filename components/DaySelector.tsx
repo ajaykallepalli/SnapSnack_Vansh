@@ -13,7 +13,8 @@ interface DaySelectorProps {
   onDateChange?: (date: Date) => void;
 }
 
-const DaySelector: React.FC<DaySelectorProps> = ({ onDateChange }) => {
+const DaySelector = React.forwardRef<{ scrollToDate: (date: Date) => void }, DaySelectorProps>(
+  ({ onDateChange }, ref) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [selectedDay, setSelectedDay] = useState<Date>(startOfToday());
   
@@ -26,6 +27,24 @@ const DaySelector: React.FC<DaySelectorProps> = ({ onDateChange }) => {
       isToday: i === 27
     };
   });
+
+  // Initial scroll to position today at the right side
+  useEffect(() => {
+    const todayIndex = days.findIndex(day => day.isToday);
+    if (todayIndex !== -1) {
+      const itemWidth = 48 + 8; // width + gap
+      const screenWidth = 48 * 5; // Approximate width showing 5 days
+      const scrollPosition = (todayIndex * itemWidth) - (screenWidth - itemWidth);
+      
+      // Ensure we scroll after layout
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          x: Math.max(0, scrollPosition),
+          animated: false
+        });
+      }, 0);
+    }
+  }, []);
 
   // Scroll to selected date when tab is focused
   useEffect(() => {
@@ -85,7 +104,7 @@ const DaySelector: React.FC<DaySelectorProps> = ({ onDateChange }) => {
       </ScrollView>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

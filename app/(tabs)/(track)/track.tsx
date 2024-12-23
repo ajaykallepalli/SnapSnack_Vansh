@@ -4,6 +4,7 @@ import { useNutritionContext } from '../../../services/nutritionContext';
 import { DailyNutritionService } from '../../../services/dailyNutritionService';
 import { NutritionTrackingService } from '../../../services/nutritionTracking';
 import { MealCard } from '../../../components/MealCard';
+import DaySelector from '../../../components/DaySelector';
 
 export default function TrackScreen() {
   const [modalVisible, setModalVisible] = React.useState(false);
@@ -48,6 +49,10 @@ export default function TrackScreen() {
     setManualEntryVisible(false);
   };
 
+  const handleDateChange = (date: Date) => {
+    console.log('Selected date:', date);
+  };
+
   const renderMealSection = (
     mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack',
     title: string,
@@ -90,6 +95,7 @@ export default function TrackScreen() {
 
   return (
     <>
+      <DaySelector onDateChange={handleDateChange} />
       <ScrollView style={styles.container}>
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -241,6 +247,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 16,
+    marginTop: 0,
   },
   section: {
     marginBottom: 24,

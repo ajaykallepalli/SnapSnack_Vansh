@@ -21,6 +21,7 @@
     "@tamagui/react-native-media-driver": "1.74.8",
     "@tamagui/shorthands": "1.74.8",
     "@tamagui/themes": "1.74.8",
+    "date-fns": "^4.1.0",
     "expo": "^52.0.19",
     "expo-constants": "~17.0.3",
     "expo-font": "~13.0.1",

@@ -79,10 +79,10 @@ export default function TrackScreen() {
           </Pressable>
         </View>
         
-        {mealEntries.map((meal, index) => (
+        {mealEntries.map((meal) => (
           <MealCard
-            key={meal.id}
-            foodId={meal.id}
+            key={`${mealType}-${meal.id || meal.created_at || Date.now()}`}
+            foodId={meal.id || `${mealType}-${meal.created_at || Date.now()}`}
             foodName={meal.food_name}
             calories={meal.calories}
             protein={meal.protein_g}

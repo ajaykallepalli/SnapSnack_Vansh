@@ -107,20 +107,22 @@ export const useImageUpload = () => {
       const timestamp = Date.now();
 
       console.log('Compressing images...');
-      const fullImage = await compressImage(pickedUri, {
-        maxWidth: 1200,
-        maxHeight: 1200,
-        quality: 0.8,
-      });
-      const thumbnail = await compressImage(pickedUri, {
-        maxWidth: 300,
-        maxHeight: 300,
-        quality: 0.6,
-      });
+      const [feedImage, thumbnail] = await Promise.all([
+        compressImage(pickedUri, {
+          maxWidth: 512,
+          maxHeight: 512,
+          quality: 0.7,
+        }),
+        compressImage(pickedUri, {
+          maxWidth: 300,
+          maxHeight: 300,
+          quality: 0.6,
+        })
+      ]);
 
       console.log('Reading base64...');
-      const [fullImageBase64, thumbnailBase64] = await Promise.all([
-        FileSystem.readAsStringAsync(fullImage, { encoding: FileSystem.EncodingType.Base64 }),
+      const [feedBase64, thumbnailBase64] = await Promise.all([
+        FileSystem.readAsStringAsync(feedImage, { encoding: FileSystem.EncodingType.Base64 }),
         FileSystem.readAsStringAsync(thumbnail, { encoding: FileSystem.EncodingType.Base64 }),
       ]);
 
@@ -129,7 +131,7 @@ export const useImageUpload = () => {
       console.log('Uploading to “food-images” bucket:', { fullPath, thumbPath });
 
       await Promise.all([
-        supabase.storage.from('food-images').upload(fullPath, decode(fullImageBase64), {
+        supabase.storage.from('food-images').upload(fullPath, decode(feedBase64), {
           contentType: 'image/jpeg',
           cacheControl: '3600',
           upsert: true,

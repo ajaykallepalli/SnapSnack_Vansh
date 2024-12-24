@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { useChatContext } from '../../../services/chatContext';
 import { useNutritionContext } from '../../../services/nutritionContext';
 import Markdown from 'react-native-markdown-display';
+import { TimeBasedCheckin } from '../../../components/TimeBasedCheckin';
 
 export default function ChatScreen() {
   const { messages } = useChatContext();
@@ -31,33 +32,7 @@ export default function ChatScreen() {
       ref={scrollViewRef}
       onLayout={() => scrollViewRef.current?.scrollToEnd({ animated: false })}
       >
-        {/* Morning check-in */}
-        <View style={styles.messageContainer}>
-          <Text style={styles.messageText}>
-            Morning Check-in 😊{'\n'}
-            Here's how you're doing so far:
-          </Text>
-          <Text style={styles.nutritionText}>
-            🥩 Protein: {dailyNutritionGoals?.protein_goal - dailyNutritionLogs?.protein_consumed}g left{'\n'}
-            🌾 Carbs: {dailyNutritionGoals?.carbs_goal - dailyNutritionLogs?.carbs_consumed}g left{'\n'} 
-            🥑 Fat: {dailyNutritionGoals?.fat_goal - dailyNutritionLogs?.fat_consumed}g left
-          </Text>
-          <Text style={styles.questionText}>
-            Would you like to plan your lunch?
-          </Text>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Yes, suggest meals</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Log breakfast first</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Show my goals</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        {/* TODO: Add a new chat button and reset screen to show new messages and create a new chat session */}
+        <TimeBasedCheckin />
         {messages && messages.map((msg, index) => {
           return (
             <View 

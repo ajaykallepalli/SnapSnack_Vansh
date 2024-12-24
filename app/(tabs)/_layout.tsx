@@ -17,6 +17,7 @@ import { useRef } from 'react';
 import { useChatContext } from '../../services/chatContext';
 import { useNutritionContext } from '../../services/nutritionContext';
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ChatTabsLayout() {
   const [inputText, setInputText] = useState('');
@@ -29,10 +30,18 @@ export default function ChatTabsLayout() {
     return (
       <View style={styles.header}>
         <Text style={styles.title}>Snap Snack</Text>
-        <View style={styles.caloriesBadge}>
-          <Text style={styles.caloriesText}>
-            {dailyNutritionGoals?.calories_goal - dailyNutritionLogs?.calories_consumed} cals left
-          </Text>
+        <View style={styles.headerRight}>
+          <View style={styles.caloriesBadge}>
+            <Text style={styles.caloriesText}>
+              {dailyNutritionGoals?.calories_goal - dailyNutritionLogs?.calories_consumed} cals left
+            </Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => router.push('/(profile)')}
+          >
+            <Ionicons name="person-circle-outline" size={32} color="#007AFF" />
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -211,5 +220,16 @@ const styles = StyleSheet.create({
   },
   buttonIcon: {
     fontSize: 20,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  profileButton: {
+    padding: 8,
+  },
+  profileIcon: {
+    fontSize: 24,
   },
 });

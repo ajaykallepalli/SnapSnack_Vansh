@@ -20,7 +20,7 @@ export const useImageUpload = () => {
         mediaTypes: 'images',
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
+        quality: 0.5,
       });
 
       if (!result.canceled && result.assets?.[0]?.uri) {
@@ -45,7 +45,7 @@ export const useImageUpload = () => {
         mediaTypes: 'images',
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
+        quality: 0.5,
       });
 
       if (!result.canceled && result.assets?.[0]?.uri) {
@@ -166,6 +166,30 @@ export const useImageUpload = () => {
       Alert.alert('Upload Failed', 'Please try again.');
       return null;
     }
+  };
+
+  const uploadImageDirect = async (fileUri: string, foodId: string) => {
+    // 1. Prepare form data
+    const formData = new FormData();
+    formData.append('file', {
+      uri: fileUri,
+      type: 'image/jpeg',
+      name: 'uploaded.jpg',
+    } as any);
+
+    // 2. Upload with fetch if supabase-js doesn’t support direct file Uri
+    const response = await fetch(
+      `https://<your-supabase-api>/storage/v1/object/food-images/${foodId}`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer <token>`,
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      }
+    );
+    // 3. Check result, handle URLs, etc.
   };
 
   return {

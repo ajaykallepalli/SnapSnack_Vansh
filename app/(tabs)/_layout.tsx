@@ -18,11 +18,13 @@ import { useChatContext } from '../../services/chatContext';
 import { useNutritionContext } from '../../services/nutritionContext';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import Modal from 'react-native-modal';
 
 export default function ChatTabsLayout() {
   const [inputText, setInputText] = useState('');
   const { sendMessage, isLoading } = useChatContext();
   const listRef = useRef<FlatList>(null);
+  const [isOptionsVisible, setIsOptionsVisible] = useState(false);
   
   // Memoize the header component to prevent re-renders
   const Header = React.memo(() => {
@@ -115,8 +117,11 @@ export default function ChatTabsLayout() {
         </View>
 
         <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.buttonIcon}>➕</Text>
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => setIsOptionsVisible(true)}
+          >
+            <Text style={styles.addButtonText}>+</Text>
           </TouchableOpacity>
           <TextInput 
             style={styles.input}
@@ -134,6 +139,58 @@ export default function ChatTabsLayout() {
             <Text style={styles.buttonIcon}>{isLoading ? '⏳' : '📤'}</Text>
           </TouchableOpacity>
         </View>
+
+        <Modal
+          isVisible={isOptionsVisible}
+          onBackdropPress={() => setIsOptionsVisible(false)}
+          style={styles.optionsModal}
+          backdropTransitionOutTiming={0}
+        >
+          <View style={styles.optionsContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Log Food or Start Discussion</Text>
+              <TouchableOpacity onPress={() => setIsOptionsVisible(false)}>
+                <Text style={styles.closeButton}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.sectionTitle}>Quick Start</Text>
+            <View style={styles.optionsGrid}>
+              <TouchableOpacity style={styles.optionCard}>
+                <Text style={styles.optionIcon}>🍽️</Text>
+                <Text style={styles.optionTitle}>Log a Meal</Text>
+                <Text style={styles.optionSubtitle}>Track your food intake</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.optionCard}>
+                <Text style={styles.optionIcon}>📋</Text>
+                <Text style={styles.optionTitle}>Meal Planning</Text>
+                <Text style={styles.optionSubtitle}>Plan your upcoming meals</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.optionCard}>
+                <Text style={styles.optionIcon}>📊</Text>
+                <Text style={styles.optionTitle}>Progress Check</Text>
+                <Text style={styles.optionSubtitle}>Review your nutrition goals</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.optionCard}>
+                <Text style={styles.optionIcon}>❓</Text>
+                <Text style={styles.optionTitle}>Nutrition Advice</Text>
+                <Text style={styles.optionSubtitle}>Get personalized guidance</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.sectionTitle}>Custom Topic</Text>
+            <TouchableOpacity style={styles.customTopicButton}>
+              <Text style={styles.plusIcon}>+</Text>
+              <View>
+                <Text style={styles.customTopicTitle}>Start Custom Discussion</Text>
+                <Text style={styles.customTopicSubtitle}>Choose your own topic</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -195,13 +252,12 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    backgroundColor: '#fff',
     alignItems: 'center',
-    paddingBottom: Platform.OS === 'ios' ? 30 : 8,
+    padding: 8,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    gap: 8,
   },
   input: {
     flex: 1,
@@ -213,7 +269,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   addButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 20,
+  },
+  addButtonText: {
+    fontSize: 28,
+    color: '#007AFF',
   },
   sendButton: {
     padding: 8,
@@ -231,5 +296,87 @@ const styles = StyleSheet.create({
   },
   profileIcon: {
     fontSize: 24,
+  },
+  optionsModal: {
+    margin: 0,
+    justifyContent: 'flex-end',
+  },
+  optionsContainer: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  closeButton: {
+    fontSize: 20,
+    color: '#666',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#000',
+  },
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 24,
+  },
+  optionCard: {
+    width: '48%',
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  optionIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  optionTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  optionSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  customTopicButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  plusIcon: {
+    fontSize: 20,
+    color: '#007AFF',
+    marginRight: 12,
+  },
+  customTopicTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  customTopicSubtitle: {
+    fontSize: 14,
+    color: '#666',
   },
 });

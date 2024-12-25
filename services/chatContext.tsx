@@ -1,15 +1,15 @@
 // services/chatContext.tsx
 import React, { createContext, useContext } from 'react';
 //import { useChatState } from './openaiService';
-import { useChatState } from './cerebrasService';
+import { useLangchainState } from './langchainService';
 import { ChatMessage } from '../types/chatTypes';
-import { ChatContextType } from '../types/chatTypes';
 
+import { ChatContextType } from '../types/chatTypes';
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
-  const chatState = useChatState();
+  const chatState = useLangchainState();
   
   return (
     <ChatContext.Provider value={chatState}>

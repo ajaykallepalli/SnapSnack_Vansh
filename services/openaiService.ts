@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { ChatMessage, NutritionContext } from '../types/chatTypes';
 import { ChatSessionService } from './chatSession';
 import { useNutritionContext } from './nutritionContext';
-import { DailyNutritionLogs, DailyNutritionGoals } from '~/types/foodTypes';
+import { DailyNutritionLogs, DailyNutritionGoals } from '../types/foodTypes';
 
 const openai = new OpenAI({
   apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY,

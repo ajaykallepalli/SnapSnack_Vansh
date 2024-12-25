@@ -75,12 +75,12 @@ export const TimeBasedCheckin = () => {
         {content.greeting}
       </Text>
       <Text style={styles.nutritionText}>
-            🥩 Protein: {dailyNutritionGoals?.protein_goal && dailyNutritionLogs?.protein_consumed ? 
-              `${dailyNutritionGoals.protein_goal - dailyNutritionLogs.protein_consumed}g left` : '--'}{'\n'}
-            🌾 Carbs: {dailyNutritionGoals?.carbs_goal && dailyNutritionLogs?.carbs_consumed ?
-              `${dailyNutritionGoals.carbs_goal - dailyNutritionLogs.carbs_consumed}g left` : '--'}{'\n'}
-            🥑 Fat: {dailyNutritionGoals?.fat_goal && dailyNutritionLogs?.fat_consumed ?
-              `${dailyNutritionGoals.fat_goal - dailyNutritionLogs.fat_consumed}g left` : '--'}
+            🥩 Protein: {dailyNutritionGoals?.protein_goal ? 
+              `${dailyNutritionGoals.protein_goal - (dailyNutritionLogs?.protein_consumed || 0)}g left` : '--'}{'\n'}
+            🌾 Carbs: {dailyNutritionGoals?.carbs_goal ?
+              `${dailyNutritionGoals.carbs_goal - (dailyNutritionLogs?.carbs_consumed || 0)}g left` : '--'}{'\n'}
+            🥑 Fat: {dailyNutritionGoals?.fat_goal ?
+              `${dailyNutritionGoals.fat_goal - (dailyNutritionLogs?.fat_consumed || 0)}g left` : '--'}
       </Text>
       
       {isExpanded && (

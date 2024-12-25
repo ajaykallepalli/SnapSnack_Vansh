@@ -25,6 +25,7 @@ export default function ChatTabsLayout() {
   const { sendMessage, isLoading } = useChatContext();
   const listRef = useRef<FlatList>(null);
   const [isOptionsVisible, setIsOptionsVisible] = useState(false);
+  const [isFoodLogVisible, setIsFoodLogVisible] = useState(false);
   
   // Memoize the header component to prevent re-renders
   const Header = React.memo(() => {
@@ -156,7 +157,14 @@ export default function ChatTabsLayout() {
 
             <Text style={styles.sectionTitle}>Quick Start</Text>
             <View style={styles.optionsGrid}>
-              <TouchableOpacity style={styles.optionCard}>
+              <TouchableOpacity 
+                style={styles.optionCard}
+                onPress={() => {
+                  console.log("Log a Meal pressed");
+                  setIsOptionsVisible(false);
+                  router.push("/(tabs)/(track)/track");
+                }}
+              >
                 <Text style={styles.optionIcon}>🍽️</Text>
                 <Text style={styles.optionTitle}>Log a Meal</Text>
                 <Text style={styles.optionSubtitle}>Track your food intake</Text>
@@ -189,6 +197,75 @@ export default function ChatTabsLayout() {
                 <Text style={styles.customTopicSubtitle}>Choose your own topic</Text>
               </View>
             </TouchableOpacity>
+          </View>
+        </Modal>
+
+        <Modal
+          isVisible={isFoodLogVisible}
+          onBackdropPress={() => setIsFoodLogVisible(false)}
+          style={styles.optionsModal}
+          backdropTransitionOutTiming={0}
+        >
+          <View style={styles.optionsContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Log Food</Text>
+              <TouchableOpacity onPress={() => setIsFoodLogVisible(false)}>
+                <Text style={styles.closeButton}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.logOptions}>
+              <TouchableOpacity 
+                style={styles.logOptionButton}
+                onPress={() => {
+                  setIsFoodLogVisible(false);
+                  // Handle image upload
+                }}
+              >
+                <View style={styles.logOptionIcon}>
+                  <Ionicons name="camera" size={24} color="#007AFF" />
+                </View>
+                <View style={styles.logOptionContent}>
+                  <Text style={styles.logOptionTitle}>Upload Image</Text>
+                  <Text style={styles.logOptionSubtitle}>Take a photo or choose from gallery</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={24} color="#C7C7CC" />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.logOptionButton}
+                onPress={() => {
+                  setIsFoodLogVisible(false);
+                  // Handle food description
+                }}
+              >
+                <View style={styles.logOptionIcon}>
+                  <Ionicons name="chatbubble" size={24} color="#007AFF" />
+                </View>
+                <View style={styles.logOptionContent}>
+                  <Text style={styles.logOptionTitle}>Describe Food</Text>
+                  <Text style={styles.logOptionSubtitle}>Tell me what you ate</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={24} color="#C7C7CC" />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.logOptionButton}
+                onPress={() => {
+                  setIsFoodLogVisible(false);
+                  // Handle manual logging
+                }}
+              >
+                <View style={styles.logOptionIcon}>
+                  <Ionicons name="create" size={24} color="#007AFF" />
+                </View>
+                <View style={styles.logOptionContent}>
+                  <Text style={styles.logOptionTitle}>Log Manually</Text>
+                  <Text style={styles.logOptionSubtitle}>Enter nutrition information</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={24} color="#C7C7CC" />
+              </TouchableOpacity>
+            </View>
           </View>
         </Modal>
       </KeyboardAvoidingView>
@@ -376,6 +453,40 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   customTopicSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  logOptions: {
+    marginTop: 8,
+  },
+  logOptionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#eee',
+    marginBottom: 12,
+  },
+  logOptionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F2F2F7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  logOptionContent: {
+    flex: 1,
+  },
+  logOptionTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  logOptionSubtitle: {
     fontSize: 14,
     color: '#666',
   },

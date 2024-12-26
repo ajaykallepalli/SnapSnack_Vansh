@@ -1,13 +1,45 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import { useNutritionContext } from '../services/nutritionContext';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useChatContext } from '../services/chatContext';
+import { useNutritionContext } from '../services/nutritionContext';
+import { supabase } from '../utils/supabase';
 
 export const TimeBasedCheckin = () => {
+  const { sendMessage, handleCreateNewSession, setIsSessionModalVisible } = useChatContext();
   const { dailyNutritionLogs, dailyNutritionGoals } = useNutritionContext();
-  const { sendMessage } = useChatContext();
+  const [currentHour, setCurrentHour] = useState(new Date().getHours());
   const [isExpanded, setIsExpanded] = useState(true);
-  
+
+  useEffect(() => {
+    const checkTime = () => {
+      const newHour = new Date().getHours();
+      if (newHour !== currentHour) {
+        setCurrentHour(newHour);
+        createNewSessionForTimeChange();
+      }
+    };
+
+    const timer = setInterval(checkTime, 60000);
+    return () => clearInterval(timer);
+  }, [currentHour]);
+
+  const createNewSessionForTimeChange = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      handleCreateNewSession();
+    }
+  };
+
+  const handleButtonPress = async (message: string) => {
+    setIsExpanded(false);
+    await sendMessage(message);
+  };
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   const getTimeBasedContent = () => {
     const hour = new Date().getHours();
     
@@ -56,31 +88,37 @@ export const TimeBasedCheckin = () => {
 
   const content = getTimeBasedContent();
 
-  const handleButtonPress = async (message: string) => {
-    setIsExpanded(false);
-    await sendMessage(message);
-  };
-
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
-  };
-
   return (
     <TouchableOpacity 
       style={[styles.messageContainer, !isExpanded && styles.minimizedContainer]}
       onPress={toggleExpanded}
       activeOpacity={0.8}
     >
-      <Text style={styles.messageText}>
-        {content.greeting}
-      </Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.messageText}>{content.greeting}</Text>
+        <View style={styles.buttonGroup}>
+          <TouchableOpacity 
+            onPress={() => handleCreateNewSession()}
+            style={styles.iconButton}
+          >
+            <Ionicons name="add-outline" size={24} color="#007AFF" />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            onPress={() => setIsSessionModalVisible(true)}
+            style={styles.iconButton}
+          >
+            <Ionicons name="time-outline" size={24} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <Text style={styles.nutritionText}>
-            🥩 Protein: {dailyNutritionGoals?.protein_goal ? 
-              `${dailyNutritionGoals.protein_goal - (dailyNutritionLogs?.protein_consumed || 0)}g left` : '--'}{'\n'}
-            🌾 Carbs: {dailyNutritionGoals?.carbs_goal ?
-              `${dailyNutritionGoals.carbs_goal - (dailyNutritionLogs?.carbs_consumed || 0)}g left` : '--'}{'\n'}
-            🥑 Fat: {dailyNutritionGoals?.fat_goal ?
-              `${dailyNutritionGoals.fat_goal - (dailyNutritionLogs?.fat_consumed || 0)}g left` : '--'}
+        🥩 Protein: {dailyNutritionGoals?.protein_goal ? 
+          `${dailyNutritionGoals.protein_goal - (dailyNutritionLogs?.protein_consumed || 0)}g left` : '--'}{'\n'}
+        🌾 Carbs: {dailyNutritionGoals?.carbs_goal ?
+          `${dailyNutritionGoals.carbs_goal - (dailyNutritionLogs?.carbs_consumed || 0)}g left` : '--'}{'\n'}
+        🥑 Fat: {dailyNutritionGoals?.fat_goal ?
+          `${dailyNutritionGoals.fat_goal - (dailyNutritionLogs?.fat_consumed || 0)}g left` : '--'}
       </Text>
       
       {isExpanded && (
@@ -111,13 +149,27 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 16,
     marginBottom: 8,
+    marginTop: 12,
+    marginHorizontal: 12,
   },
   minimizedContainer: {
     paddingVertical: 8,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    padding: 4,
+  },
   messageText: {
     fontSize: 16,
-    marginBottom: 12,
     color: '#000',
   },
   nutritionText: {

@@ -1,14 +1,30 @@
 // services/chatContext.tsx
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useLangchainState } from './langchainService';
 import { supabase } from '../utils/supabase';
 import { ChatContextType } from '../types/chatTypes';
+import { ChatSessionService } from './chatSession';
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const chatState = useLangchainState();
-  
+  const [isSessionModalVisible, setIsSessionModalVisible] = useState(false);
+
+  // Add handleCreateNewSession to the context value
+  const contextValue = {
+    ...chatState,
+    handleCreateNewSession: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const newSession = await ChatSessionService.createChatSession(session.user.id);
+        await chatState.loadChatSession(newSession.id);
+      }
+    },
+    isSessionModalVisible,
+    setIsSessionModalVisible,
+  };
+
   // Initialize first chat session on mount
   useEffect(() => {
     const initializeFirstSession = async () => {
@@ -33,7 +49,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <ChatContext.Provider value={chatState}>
+    <ChatContext.Provider value={contextValue}>
       {children}
     </ChatContext.Provider>
   );

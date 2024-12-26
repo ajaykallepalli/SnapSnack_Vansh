@@ -65,16 +65,6 @@ export default function ChatScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Chat</Text>
-        <TouchableOpacity 
-          onPress={() => setIsSessionModalVisible(true)}
-          style={styles.sessionButton}
-        >
-          <Ionicons name="documents-outline" size={24} color="#007AFF" />
-        </TouchableOpacity>
-      </View>
-
       <ScrollView 
         style={styles.chat} 
         ref={scrollViewRef}
@@ -132,7 +122,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
   },
-  sessionButton: {
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerButton: {
     padding: 8,
   },
   chat: {

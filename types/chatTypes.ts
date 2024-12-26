@@ -32,6 +32,9 @@ export interface ChatContextType {
     sendMessage: (content: string) => Promise<void>;
     isLoading: boolean;
     currentChatSessionId: string | null;
-    loadChatSession: (chatSessionId: string) => Promise<void>;
+    loadChatSession: (sessionId: string) => Promise<void>;
     initializeChatSession: (userId: string) => Promise<string>;
+    handleCreateNewSession: () => Promise<void>;
+    isSessionModalVisible: boolean;
+    setIsSessionModalVisible: (visible: boolean) => void;
   }

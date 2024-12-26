@@ -12,9 +12,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../../utils/supabase';
 
 export default function ChatScreen() {
-  const { messages, currentChatSessionId, loadChatSession, initializeChatSession } = useChatContext();
+  const { 
+    messages, 
+    currentChatSessionId, 
+    loadChatSession, 
+    isSessionModalVisible, 
+    setIsSessionModalVisible 
+  } = useChatContext();
   const { dailyNutritionLogs, dailyNutritionGoals } = useNutritionContext();
-  const [isSessionModalVisible, setIsSessionModalVisible] = useState(false);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
   const prevMessagesLength = useRef(messages?.length || 0);
@@ -22,6 +27,10 @@ export default function ChatScreen() {
   useEffect(() => {
     loadChatSessions();
   }, []);
+
+  useEffect(() => {
+    console.log('Modal visibility changed:', isSessionModalVisible);
+  }, [isSessionModalVisible]);
 
   const loadChatSessions = async () => {
     try {

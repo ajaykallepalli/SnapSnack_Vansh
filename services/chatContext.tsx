@@ -11,9 +11,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const chatState = useLangchainState();
   const [isSessionModalVisible, setIsSessionModalVisible] = useState(false);
 
-  // Add handleCreateNewSession to the context value
   const contextValue = {
     ...chatState,
+    isSessionModalVisible,
+    setIsSessionModalVisible,
     handleCreateNewSession: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -21,8 +22,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         await chatState.loadChatSession(newSession.id);
       }
     },
-    isSessionModalVisible,
-    setIsSessionModalVisible,
   };
 
   // Initialize first chat session on mount

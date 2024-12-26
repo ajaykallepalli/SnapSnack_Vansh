@@ -88,6 +88,10 @@ export const TimeBasedCheckin = () => {
 
   const content = getTimeBasedContent();
 
+  useEffect(() => {
+    console.log('TimeBasedCheckin: Modal button pressed');
+  }, []);
+
   return (
     <TouchableOpacity 
       style={[styles.messageContainer, !isExpanded && styles.minimizedContainer]}
@@ -104,7 +108,10 @@ export const TimeBasedCheckin = () => {
             <Ionicons name="add-outline" size={24} color="#007AFF" />
           </TouchableOpacity>
           <TouchableOpacity 
-            onPress={() => setIsSessionModalVisible(true)}
+            onPress={() => {
+              console.log('Opening session modal');
+              setIsSessionModalVisible(true);
+            }}
             style={styles.iconButton}
           >
             <Ionicons name="time-outline" size={24} color="#007AFF" />

@@ -18,6 +18,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     handleCreateNewSession: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        // Summarize and rename old sessions first
+        await ChatSessionService.summarizeAndRenameSessions(session.user.id);
+        
+        // Create new session
         const newSession = await ChatSessionService.createChatSession(session.user.id);
         await chatState.loadChatSession(newSession.id);
       }

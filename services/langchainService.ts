@@ -259,7 +259,7 @@ export const useLangchainState = () => {
       setMessages(currentMessages => [...currentMessages, aiMessage]);
 
       logger.debug('Saving messages to database');
-      await supabase
+      const { error: insertError } = await supabase
         .from('chat_messages')
         .insert([
           {
@@ -277,6 +277,13 @@ export const useLangchainState = () => {
             created_at: new Date().toISOString()
           }
         ]);
+
+      if (insertError) {
+        logger.error('Error saving messages:', insertError);
+        throw insertError;
+      }
+
+      await ChatSessionService.updateLastMessageTime(chatSessionId);
 
       logger.info('Message processing completed successfully');
 

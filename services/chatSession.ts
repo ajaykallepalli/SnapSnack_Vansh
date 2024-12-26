@@ -35,9 +35,25 @@ export class ChatSessionService {
       .from('chat_messages')
       .select('*')
       .eq('chat_session_id', chatSessionId)
-      .order('created_at');
+      .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return data;
+    
+    // Transform the data to match ChatMessage type
+    return data.map(msg => ({
+      role: msg.role as 'user' | 'assistant' | 'system',
+      content: msg.content,
+      chat_session_id: msg.chat_session_id,
+      created_at: msg.created_at
+    }));
+  }
+
+  static async updateLastMessageTime(sessionId: string) {
+    const { error } = await supabase
+      .from('chat_sessions')
+      .update({ last_message_at: new Date().toISOString() })
+      .eq('id', sessionId);
+
+    if (error) throw error;
   }
 } 

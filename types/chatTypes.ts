@@ -24,6 +24,7 @@ export interface ChatSession {
   user_id: string;
   title: string;
   created_at: string;
+  last_message_at: string;
 }
 
 export interface ChatContextType {

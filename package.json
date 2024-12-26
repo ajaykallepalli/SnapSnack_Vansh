@@ -23,6 +23,7 @@
     "@tamagui/react-native-media-driver": "1.74.8",
     "@tamagui/shorthands": "1.74.8",
     "@tamagui/themes": "1.74.8",
+    "axios": "^1.7.9",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "expo": "^52.0.19",

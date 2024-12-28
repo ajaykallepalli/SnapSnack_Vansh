@@ -105,7 +105,7 @@ export class ChatSessionService {
           
           if (!messages || messages.length === 0) {
             console.log('Deleting empty session:', session.id);
-            const deleted = await this.deleteSession(session.id);
+            const deleted = await this.deleteSession(session.id, userId);
             
             if (!deleted) {
               console.error('Failed to delete session:', session.id);
@@ -157,48 +157,66 @@ export class ChatSessionService {
       }
 
       // Second pass: Summarize remaining sessions
-      // for (const session of sessions) {
-      //   try {
-      //     const messages = await this.getChatSessionMessages(session.id);
-      //     if (messages.length === 0) continue; // Skip if empty after deletions
+      for (const session of sessions) {
+        try {
+          const messages = await this.getChatSessionMessages(session.id, userId);
+          if (messages.length === 0) {
+            console.log('Skipping empty session:', session.id);
+            continue;
+          }
 
-      //     // Get first 5 messages only
-      //     const firstFiveMessages = messages.slice(0, 5);
-      //     const messageContent = firstFiveMessages
-      //       .map(m => `${m.role}: ${m.content}`)
-      //       .join('\n');
+          console.log('Processing session:', {
+            sessionId: session.id,
+            userId,
+            messageCount: messages.length
+          });
+
+          // Get first 5 messages only
+          const firstFiveMessages = messages.slice(0, 5);
+          const messageContent = firstFiveMessages
+            .map(m => `${m.role}: ${m.content}`)
+            .join('\n');
           
-      //     console.log('Getting summary for session:', session.id);
+          console.log('Getting summary for session:', session.id);
           
-      //     const chatCompletion = await client.chat.completions.create({
-      //       messages: [{
-      //         role: 'user',
-      //         content: `Please provide a brief (3-4 words) title summarizing this conversation:\n${messageContent}`
-      //       }],
-      //       model: 'llama3.1-8b',
-      //       temperature: 0.3,
-      //       max_tokens: 10
-      //     }) as CerebrasResponse;
+          const chatCompletion = await client.chat.completions.create({
+            messages: [{
+              role: 'user',
+              content: `Please provide a brief (3-4 words) title summarizing this conversation:\n${messageContent}`
+            }],
+            model: 'llama3.1-8b',
+            temperature: 0.3,
+            max_tokens: 10
+          }) as CerebrasResponse;
 
-      //     const summary = chatCompletion.choices[0]?.message?.content?.trim() || 'Chat Session';
-      //     console.log('Generated summary:', summary);
+          const summary = chatCompletion.choices[0]?.message?.content?.trim() || 'Chat Session';
+          console.log('Generated summary:', summary);
 
-      //     const { error: updateError } = await supabase
-      //       .from('chat_sessions')
-      //       .update({ title: summary })
-      //       .eq('id', session.id);
+          const { error: updateError } = await supabase
+            .from('chat_sessions')
+            .update({ title: summary })
+            .eq('id', session.id);
 
-      //     if (updateError) {
-      //       console.error('Error updating session title:', updateError);
-      //     } else {
-      //       console.log('Successfully updated session title for:', session.id);
-      //     }
-      //   } catch (error) {
-      //     console.error('Error processing session:', session.id, error);
-      //   }
-      // }
+          if (updateError) {
+            console.error('Error updating session title:', updateError);
+          } else {
+            console.log('Successfully updated session title for:', session.id);
+          }
+        } catch (error) {
+          console.error('Error processing session:', {
+            sessionId: session.id,
+            userId,
+            error: error instanceof Error ? error.message : error,
+            stack: error instanceof Error ? error.stack : undefined
+          });
+        }
+      }
     } catch (error) {
-      console.error('Top level error in summarizeAndRenameSessions:', error);
+      console.error('Top level error in summarizeAndRenameSessions:', {
+        userId,
+        error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
   }
 
@@ -263,5 +281,24 @@ export class ChatSessionService {
       console.error('Error in deleteSession:', error);
       return false;
     }
+  }
+
+  static async deleteChatSession(sessionId: string, userId: string) {
+    // First delete messages
+    const { error: messagesError } = await supabase
+      .from('chat_messages')
+      .delete()
+      .eq('chat_session_id', sessionId);
+
+    if (messagesError) throw messagesError;
+
+    // Then delete the session, specifying which table's user_id to use
+    const { error: sessionError } = await supabase
+      .from('chat_sessions')
+      .delete()
+      .eq('id', sessionId)
+      .eq('user_id', userId); // This ensures only the owner can delete
+
+    if (sessionError) throw sessionError;
   }
 } 

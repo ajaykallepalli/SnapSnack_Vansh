@@ -59,8 +59,15 @@ export default function ChatScreen() {
   };
 
   const handleSelectSession = async (sessionId: string) => {
-    await loadChatSession(sessionId);
-    setIsSessionModalVisible(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await loadChatSession(sessionId);
+        setIsSessionModalVisible(false);
+      }
+    } catch (error) {
+      console.error('Error selecting session:', error);
+    }
   };
 
   useEffect(() => {

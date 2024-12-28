@@ -163,13 +163,38 @@ export class LangchainService {
     }
   }
 
-  static async routeRequest(type: MessageType, payload: any) {
+  static async routeRequest(type: MessageType, payload: any, nutritionData: {
+    dailyNutritionGoals: DailyNutritionGoals | null;
+    dailyNutritionLogs: DailyNutritionLogs | null;
+  }) {
     logger.info('Processing request:', { type, payloadLength: JSON.stringify(payload).length });
     
     const messages: ChatMessage[] = [
       { 
         role: 'system', 
         content: this.PROMPTS[type]
+      },
+      {
+        role: 'system',
+        content: `User's current goals: 
+        Daily Calories: ${nutritionData.dailyNutritionGoals?.calories_goal}
+        Protein: ${nutritionData.dailyNutritionGoals?.protein_goal}g
+        Carbs: ${nutritionData.dailyNutritionGoals?.carbs_goal}g
+        Fat: ${nutritionData.dailyNutritionGoals?.fat_goal}g`
+      },
+      {
+        role: 'system',
+        content: `User's current overall daily nutrition: 
+        Daily Calories: ${nutritionData.dailyNutritionLogs?.calories_consumed}
+        Protein: ${nutritionData.dailyNutritionLogs?.protein_consumed}g
+        Carbs: ${nutritionData.dailyNutritionLogs?.carbs_consumed}g
+        Fat: ${nutritionData.dailyNutritionLogs?.fat_consumed}g`
+      },
+      {
+        role: 'system',
+        content: `Today's meal history: ${nutritionData.dailyNutritionLogs?.meals_data.map(meal => 
+          `\n- ${meal.food_name} (${meal.meal_type}) at ${new Date(meal.eaten_at).toLocaleTimeString()}: ${meal.calories}cal, ${meal.protein_g}g protein, ${meal.carbs_g}g carbs, ${meal.fat_g}g fat`
+        ).join('')}`
       },
       {
         role: 'user',
@@ -218,7 +243,13 @@ export const useLangchainState = () => {
 
   const loadChatSession = async (chatSessionId: string) => {
     logger.info('Loading chat session:', chatSessionId);
-    const messages = await ChatSessionService.getChatSessionMessages(chatSessionId);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) {
+      logger.error('No user session found');
+      return;
+    }
+
+    const messages = await ChatSessionService.getChatSessionMessages(chatSessionId, session.user.id);
     setMessages(messages);
     setCurrentChatSessionId(chatSessionId);
     logger.debug('Loaded messages:', { count: messages.length });
@@ -231,25 +262,36 @@ export const useLangchainState = () => {
     logger.info('Starting message processing');
 
     try {
-      // First, route the message
+      // First, get session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        throw new Error('No active auth session');
+      }
+
+      // Ensure we have a chat session
+      let chatSessionId = currentChatSessionId;
+      if (!chatSessionId) {
+        const newSession = await ChatSessionService.createChatSession(session.user.id);
+        chatSessionId = newSession.id;
+        setCurrentChatSessionId(chatSessionId);
+      }
+
+      // Route the message
       const routingResult = await LangchainService.routeMessage(content);
       logger.info('Message routed:', routingResult);
 
       const userMessage: ChatMessage = { role: 'user', content };
       setMessages(currentMessages => [...currentMessages, userMessage]);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        logger.error('No active auth session');
-        throw new Error('No active auth session');
-      }
-
-      const chatSessionId = currentChatSessionId || await initializeChatSession(session.user.id);
-      logger.debug('Using chat session:', chatSessionId);
-
       // Process with determined type
-      const aiResponse = await LangchainService.routeRequest(routingResult.type, content);
-      logger.info('Received AI response for type:', routingResult.type);
+      const aiResponse = await LangchainService.routeRequest(
+        routingResult.type, 
+        content,
+        {
+          dailyNutritionGoals: nutritionContext.dailyNutritionGoals,
+          dailyNutritionLogs: nutritionContext.dailyNutritionLogs
+        }
+      );
 
       const aiMessage: ChatMessage = {
         role: 'assistant',
@@ -257,6 +299,11 @@ export const useLangchainState = () => {
       };
       
       setMessages(currentMessages => [...currentMessages, aiMessage]);
+
+      // Verify chatSessionId exists before DB operations
+      if (!chatSessionId) {
+        throw new Error('Failed to create or retrieve chat session');
+      }
 
       logger.debug('Saving messages to database');
       const { error: insertError } = await supabase
@@ -284,7 +331,6 @@ export const useLangchainState = () => {
       }
 
       await ChatSessionService.updateLastMessageTime(chatSessionId);
-
       logger.info('Message processing completed successfully');
 
     } catch (error) {

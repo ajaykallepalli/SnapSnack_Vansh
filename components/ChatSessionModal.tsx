@@ -21,6 +21,11 @@ export function ChatSessionModal({
   onCreateNewSession,
   currentSessionId
 }: ChatSessionModalProps) {
+  const handleSessionSelect = async (sessionId: string) => {
+    await onSelectSession(sessionId);
+    onClose(); // Close modal after selection
+  };
+
   return (
     <Modal
       isVisible={isVisible}
@@ -52,7 +57,7 @@ export function ChatSessionModal({
                 styles.sessionItem,
                 currentSessionId === item.id && styles.activeSession
               ]}
-              onPress={() => onSelectSession(item.id)}
+              onPress={() => handleSessionSelect(item.id)}
             >
               <Ionicons 
                 name="chatbubble-outline" 
